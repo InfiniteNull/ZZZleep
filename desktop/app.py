@@ -23,7 +23,7 @@ except ImportError:
     HAS_WINSOUND = False
 
 # Application Meta
-APP_NAME = "ZZZleep Desktop"
+APP_NAME = "ZZZleep"
 APP_VERSION = "1.0.0"
 DATA_FILE = os.path.join(os.path.expanduser("~"), ".zzzleep_desktop_data.json")
 
@@ -136,11 +136,8 @@ class ZzzleepDesktopApp:
         header = tk.Frame(self.root, bg="#1e293b", height=56)
         header.pack(fill="x", side="top")
 
-        brand = tk.Label(header, text="⏰ ZZZleep Desktop", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b")
+        brand = tk.Label(header, text="⏰ ZZZleep", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b")
         brand.pack(side="left", padx=16, pady=12)
-
-        badge = tk.Label(header, text="WINDOWS", font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#0f172a", padx=8, pady=2)
-        badge.pack(side="left", padx=2)
 
         self.top_clock = tk.Label(header, text="--:--:--", font=("Consolas", 12, "bold"), fg="#f8fafc", bg="#1e293b")
         self.top_clock.pack(side="right", padx=16)
@@ -350,10 +347,10 @@ class ZzzleepDesktopApp:
         tk.Label(card, text=f"Lokasi File: {DATA_FILE}", font=("Consolas", 9), fg="#94a3b8", bg="#1e293b").pack(anchor="w", padx=20, pady=(0, 16))
 
         info_text = (
-            "Karakteristik Aplikasi:\\n"
-            "1. Seluruh data disimpan secara lokal pada perangkat Anda dalam format JSON.\\n"
-            "2. Nada alarm dihasilkan langsung melalui driver audio Windows (winsound) tanpa file audio eksternal.\\n"
-            "3. Berkas data dapat dicadangkan atau dipindahkan secara manual kapan saja."
+            "Karakteristik Aplikasi:\n"
+            "1. Seluruh data preferensi & jadwal tersimpan secara lokal dalam format JSON.\n"
+            "2. Generator nada alarm dihasilkan secara sintetis menggunakan modul audio bawaan.\n"
+            "3. Berkas basis data dapat dicadangkan atau dipindahkan secara manual kapan saja."
         )
         tk.Label(card, text=info_text, font=("Segoe UI", 10), fg="#e2e8f0", bg="#1e293b", justify="left").pack(anchor="w", padx=20, pady=8)
 
