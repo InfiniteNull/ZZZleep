@@ -1,16 +1,7 @@
 /**
- * zzzleep-suite.js — ZZZleep Suite: Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian
- * Flagship Project 4:
- * - Interactive Monthly Calendar Matrix & Priority Agenda Planner
- * - Real-Time Precision Alarm Station with Web Audio Synthesizer (Zero External Dependencies)
- * - Pomodoro Focus & Rest Cycle Engine
- * - Sleep Hygiene, Bedtime Tracker & 20-20-20 Eye-Rest Guardian
- * - Daily Habit Routine Checklist & Streak Analytics
- * - 100% Offline Local Privacy Vault (JSON Import/Export)
- * - Native Windows Desktop .EXE Source & Integration Guide
- * 
- * Lead Developer & Core Architect: Rizki Ananda, S.Kom (@InfiniteNull)
- * 100% Client-Side & Zero-Telemetry Architecture.
+ * zzzleep-suite.js — ZZZleep: Offline Desktop Calendar, Audio Alarm & Rest Timer
+ * Author: Rizki Ananda, S.Kom (@InfiniteNull)
+ * License: MIT
  */
 
 (function () {
@@ -398,10 +389,10 @@
           <div class="space-y-1.5 max-w-3xl">
             <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
               <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
-              <span>ZZZleep Suite Core • 100% Offline & Private Local Engine</span>
+              <span>ZZZleep • Offline Desktop Companion</span>
             </div>
             <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-              <span>${isEn ? "Smart Desktop Calendar, Precision Alarm & Routine Guardian" : "Kalender Desktop Pintar, Alarm Audio & Pengingat Rutinitas"}</span>
+              <span>${isEn ? "Offline Desktop Calendar & Audio Alarm" : "Kalender Desktop & Alarm Audio Offline"}</span>
             </h2>
             <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               ${isEn
@@ -472,31 +463,31 @@
         <div class="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-px scrollbar-none" id="zzzSubTabs">
           <button data-tab="calendar" class="zzz-tab-link ${state.currentTab === 'calendar' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="calendar" class="w-4 h-4"></i>
-            <span>${isEn ? "1. Calendar Matrix" : "1. Kalender Agenda"}</span>
+            <span>${isEn ? "1. Calendar" : "1. Kalender"}</span>
           </button>
           <button data-tab="alarm" class="zzz-tab-link ${state.currentTab === 'alarm' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="alarm-clock" class="w-4 h-4"></i>
-            <span>${isEn ? "2. Alarm Station" : "2. Stasiun Alarm"}</span>
+            <span>${isEn ? "2. Alarms" : "2. Alarm"}</span>
           </button>
           <button data-tab="pomodoro" class="zzz-tab-link ${state.currentTab === 'pomodoro' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="timer" class="w-4 h-4"></i>
-            <span>${isEn ? "3. Pomodoro Focus" : "3. Pomodoro Fokus"}</span>
+            <span>${isEn ? "3. Pomodoro" : "3. Pomodoro"}</span>
           </button>
           <button data-tab="sleep" class="zzz-tab-link ${state.currentTab === 'sleep' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="moon" class="w-4 h-4"></i>
-            <span>${isEn ? "4. Eye-Rest & Sleep" : "4. Istirahat & Tidur"}</span>
+            <span>${isEn ? "4. Eye Rest" : "4. Istirahat Mata"}</span>
           </button>
           <button data-tab="habits" class="zzz-tab-link ${state.currentTab === 'habits' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
-            <span>${isEn ? "5. Daily Routines" : "5. Rutinitas Harian"}</span>
+            <span>${isEn ? "5. Habits" : "5. Kebiasaan"}</span>
           </button>
           <button data-tab="backup" class="zzz-tab-link ${state.currentTab === 'backup' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="shield-check" class="w-4 h-4"></i>
-            <span>${isEn ? "6. Privacy Vault" : "6. Backup & Privasi"}</span>
+            <span>${isEn ? "6. Data & Backup" : "6. Data & Backup"}</span>
           </button>
           <button data-tab="desktop" class="zzz-tab-link ${state.currentTab === 'desktop' ? 'active' : ''} px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="monitor" class="w-4 h-4"></i>
-            <span>${isEn ? "7. Windows .EXE" : "7. Aplikasi Windows .EXE"}</span>
+            <span>${isEn ? "7. Desktop App (.exe)" : "7. Desktop (.exe)"}</span>
           </button>
         </div>
 
@@ -832,7 +823,7 @@
           <div class="space-y-1">
             <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <i data-lucide="alarm-clock" class="w-5 h-5 text-sky-500"></i>
-              <span>${isEn ? "Precision Desktop Alarms & Audio Chimes" : "Stasiun Alarm Presisi & Audio Chimes"}</span>
+              <span>${isEn ? "Desktop Alarms & Audio Notifications" : "Daftar Alarm & Pengingat Audio"}</span>
             </h3>
             <p class="text-xs text-slate-500">${isEn ? "Offline Web Audio synthesizer triggers instant alarms and Windows notifications without internet." : "Synthesizer audio offline langsung membunyikan alarm dan notifikasi laptop tanpa koneksi internet."}</p>
           </div>
@@ -898,7 +889,7 @@
         <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
           <h3 class="font-bold text-sm flex items-center gap-2">
             <i data-lucide="alarm-clock-plus" class="w-4 h-4 text-sky-500"></i>
-            <span>${isEn ? 'Set New Precision Alarm' : 'Atur Alarm Baru'}</span>
+            <span>${isEn ? 'Set New Alarm' : 'Atur Alarm Baru'}</span>
           </h3>
           <button onclick="document.getElementById('zzzGlobalModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
             <i data-lucide="x" class="w-4 h-4"></i>
@@ -1092,7 +1083,7 @@
           <div class="flex items-center justify-between">
             <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
               <i data-lucide="eye" class="w-5 h-5 text-sky-500"></i>
-              <span>${isEn ? "20-20-20 Eye-Rest Guardian" : "Pelindung Kelelahan Mata 20-20-20"}</span>
+              <span>${isEn ? "20-20-20 Screen Rest Reminder" : "Pengingat Istirahat Layar 20-20-20"}</span>
             </h3>
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300">
               ${sh.eyeRestRunning ? (isEn ? 'ACTIVE' : 'AKTIF') : (isEn ? 'PAUSED' : 'JEDA')}

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZZZleep Suite — Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian</title>
-  <meta name="description" content="Aplikasi kalender interaktif desktop offline, alarm audio cerdas, pomodoro timer, dan pengingat istirahat layar/kesehatan untuk laptop dan PC Windows." />
+  <title>ZZZleep — Kalender Desktop & Alarm Audio Offline</title>
+  <meta name="description" content="Aplikasi kalender offline, alarm audio sintetis, timer pomodoro, dan pengingat istirahat layar untuk laptop dan PC Windows." />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><rect width='32' height='32' rx='8' fill='%230f172a'/><path d='M10 9h12l-10 14h10' stroke='%2338bdf8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 
   <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
@@ -109,14 +109,14 @@
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
             <h1 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight" id="headerSystemTitle">
-              ZZZleep Suite
+              ZZZleep
             </h1>
             <span id="headerSystemBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-              100% OFFLINE
+              OFFLINE
             </span>
           </div>
           <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono" id="headerSystemSub">
-            Smart Calendar • Audio Alarm Synth • Pomodoro • Windows .EXE
+            Kalender • Alarm Audio • Pomodoro • Windows .exe
           </p>
         </div>
       </div>
@@ -168,7 +168,7 @@
   <!-- FOOTER -->
   <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
     <div class="max-w-7xl mx-auto px-4 space-y-1 font-mono text-[11px]">
-      <p id="footerSub1">ZZZleep Suite — Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian</p>
+      <p id="footerSub1">ZZZleep — Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian</p>
       <p id="footerSub2">© 2026 <a href="https://github.com/InfiniteNull" class="text-sky-600 dark:text-sky-400 hover:underline">Rizki Ananda, S.Kom (@InfiniteNull)</a> • Handcrafted with Clean Code & 100% Privacy.</p>
     </div>
   </footer>
@@ -221,7 +221,7 @@
       if (navHubLabel) navHubLabel.textContent = isEn ? 'Portfolio Hub ↗' : 'Hub Portofolio ↗';
 
       const headerSystemBadge = document.getElementById('headerSystemBadge');
-      if (headerSystemBadge) headerSystemBadge.textContent = isEn ? '100% OFFLINE' : '100% OFFLINE';
+      if (headerSystemBadge) headerSystemBadge.textContent = isEn ? 'OFFLINE' : 'OFFLINE';
     }
 
     function toggleLanguage() {

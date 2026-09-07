@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
 """
-ZZZleep Desktop — Smart Offline Routine Guardian & Precision Alarm
+ZZZleep Desktop — Offline Calendar, Audio Alarm & Rest Timer
 Author: Rizki Ananda, S.Kom (@InfiniteNull)
 License: MIT
-
-Features:
-- 100% Offline & Zero Telemetry
-- Precision Audio Alarm with Harmonic Synthesized Beeps (Windows winsound)
-- 20-20-20 Screen Rest & Pomodoro Interval Reminders
-- Offline Calendar & Daily Schedule Task Planner
-- Persistent Local JSON Data Storage
-- Standalone Native Windows Application (.EXE ready)
 """
 
 import os
@@ -31,7 +23,7 @@ except ImportError:
     HAS_WINSOUND = False
 
 # Application Meta
-APP_NAME = "ZZZleep Suite Desktop"
+APP_NAME = "ZZZleep Desktop"
 APP_VERSION = "1.0.0"
 DATA_FILE = os.path.join(os.path.expanduser("~"), ".zzzleep_desktop_data.json")
 
@@ -149,10 +141,10 @@ class ZzzleepDesktopApp:
         header_frame = tk.Frame(self.root, bg="#1e293b", height=60)
         header_frame.pack(fill="x", side="top")
 
-        brand_lbl = tk.Label(header_frame, text="⏰ ZZZleep Suite Desktop", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b")
+        brand_lbl = tk.Label(header_frame, text="⏰ ZZZleep Desktop", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b")
         brand_lbl.pack(side="left", padx=16, pady=12)
 
-        badge_lbl = tk.Label(header_frame, text="100% OFFLINE • ZERO TELEMETRY", font=("Segoe UI", 8, "bold"), fg="#0284c7", bg="#0f172a", padx=8, pady=3)
+        badge_lbl = tk.Label(header_frame, text="OFFLINE", font=("Segoe UI", 8, "bold"), fg="#0284c7", bg="#0f172a", padx=8, pady=3)
         badge_lbl.pack(side="left", padx=4)
 
         self.top_clock_lbl = tk.Label(header_frame, text="--:--:--", font=("Consolas", 12, "bold"), fg="#f8fafc", bg="#1e293b")
@@ -364,14 +356,14 @@ class ZzzleepDesktopApp:
         card = tk.Frame(container, bg="#1e293b")
         card.pack(fill="both", expand=True, padx=6, pady=6)
 
-        tk.Label(card, text="🔒 OFFLINE DATA VAULT & PRIVACY", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor="w", padx=20, pady=(20, 4))
+        tk.Label(card, text="📁 PENYIMPANAN DATA LOKAL (JSON)", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor="w", padx=20, pady=(20, 4))
         tk.Label(card, text=f"Lokasi Berkas Lokal: {DATA_FILE}", font=("Consolas", 9), fg="#94a3b8", bg="#1e293b").pack(anchor="w", padx=20, pady=(0, 16))
 
         info_text = (
-            "Prinsip Utama ZZZleep Suite:\n"
-            "1. 100% Bebas Telemetri: Tidak ada data pengguna, jadwal, atau waktu alarm yang dikirim ke server manapun.\n"
-            "2. Mandiri & Berjalan Tanpa Internet: Seluruh generator nada dering disintesis secara matematis di sistem audio lokal.\n"
-            "3. Portabilitas Penuh: Berkas data disimpan dalam format standar JSON yang dapat disalin atau dipindahkan antar perangkat."
+            "Karakteristik Aplikasi:\n"
+            "1. Seluruh data disimpan secara lokal pada perangkat Anda dalam format JSON.\n"
+            "2. Nada alarm dihasilkan langsung melalui driver audio Windows (winsound) tanpa file audio eksternal.\n"
+            "3. Berkas data dapat dicadangkan atau dipindahkan secara manual kapan saja."
         )
         tk.Label(card, text=info_text, font=("Segoe UI", 10), fg="#e2e8f0", bg="#1e293b", justify="left").pack(anchor="w", padx=20, pady=8)
 
