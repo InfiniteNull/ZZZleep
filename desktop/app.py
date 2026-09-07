@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ZZZleep Desktop — Desktop Calendar, Audio Alarm & Rest Timer
+ZZZleep — Desktop Calendar, Audio Alarm & Rest Timer
 Author: Rizki Ananda, S.Kom (@InfiniteNull)
 License: MIT
 """
@@ -12,6 +12,8 @@ import time
 import math
 import threading
 import datetime
+import urllib.request
+import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -22,10 +24,12 @@ try:
 except ImportError:
     HAS_WINSOUND = False
 
-# Application Meta
+# Application Meta & Update Config
 APP_NAME = "ZZZleep"
 APP_VERSION = "1.0.0"
 DATA_FILE = os.path.join(os.path.expanduser("~"), ".zzzleep_desktop_data.json")
+UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/InfiniteNull/ZZZleep/main/version.json"
+GITHUB_REPO_URL = "https://github.com/InfiniteNull/ZZZleep"
 
 DEFAULT_DATA = {
     "alarms": [
@@ -43,6 +47,15 @@ DEFAULT_DATA = {
         "eyeRestIntervalMin": 20
     }
 }
+
+
+def parse_version(v_str):
+    """Parses semver string into comparable tuple."""
+    try:
+        clean = str(v_str).strip().lstrip('v')
+        return tuple(int(x) for x in clean.split('.'))
+    except Exception:
+        return (0, 0, 0)
 
 
 def play_audio_tone(tone_type="gentle"):
@@ -94,6 +107,9 @@ class ZzzleepDesktopApp:
         self.setup_styles()
         self.build_ui()
         self.start_background_timer()
+
+        # Background update check on launch (silent)
+        self.root.after(2000, lambda: self.check_for_updates_async(silent=True))
 
     def load_data(self):
         if os.path.exists(DATA_FILE):
@@ -156,9 +172,9 @@ class ZzzleepDesktopApp:
         self.notebook.add(tab_timers, text="  🍅 Pomodoro & Istirahat Layar  ")
         self.build_timers_tab(tab_timers)
 
-        # Tab 3: Habits & Data
+        # Tab 3: Habits, Data & Updates
         tab_vault = ttk.Frame(self.notebook)
-        self.notebook.add(tab_vault, text="  📊 Kebiasaan & Data JSON  ")
+        self.notebook.add(tab_vault, text="  📁 Data JSON & Pembaruan  ")
         self.build_vault_tab(tab_vault)
 
     def build_alarms_tab(self, parent):
@@ -300,7 +316,6 @@ class ZzzleepDesktopApp:
         btn_pomo_r = tk.Button(pomo_btns, text="Reset", font=("Segoe UI", 10), bg="#334155", fg="#f8fafc", relief="flat", padx=10, pady=6, command=self.reset_pomodoro)
         btn_pomo_r.pack(side="left", padx=6)
 
-        desc1 = "Siklus kerja fokus 25 menit diselingi istirahat 5 menit\\nuntuk menjaga konsentrasi kerja."
         tk.Label(pomo, text="Siklus kerja fokus 25 menit diselingi istirahat 5 menit\nuntuk menjaga konsentrasi kerja.", font=("Segoe UI", 9), fg="#94a3b8", bg="#1e293b", justify="center").pack(pady=16)
 
         # Eye Rest Card
@@ -340,11 +355,12 @@ class ZzzleepDesktopApp:
         container = tk.Frame(parent, bg="#0f172a")
         container.pack(fill="both", expand=True, padx=6, pady=6)
 
+        # 1. Local Storage Card
         card = tk.Frame(container, bg="#1e293b")
-        card.pack(fill="both", expand=True, padx=6, pady=6)
+        card.pack(fill="x", padx=6, pady=(6, 8))
 
-        tk.Label(card, text="📁 PENYIMPANAN DATA LOKAL (JSON)", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor="w", padx=20, pady=(20, 4))
-        tk.Label(card, text=f"Lokasi File: {DATA_FILE}", font=("Consolas", 9), fg="#94a3b8", bg="#1e293b").pack(anchor="w", padx=20, pady=(0, 16))
+        tk.Label(card, text="📁 PENYIMPANAN DATA LOKAL (JSON)", font=("Segoe UI", 12, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor="w", padx=20, pady=(16, 4))
+        tk.Label(card, text=f"Lokasi File: {DATA_FILE}", font=("Consolas", 9), fg="#94a3b8", bg="#1e293b").pack(anchor="w", padx=20, pady=(0, 10))
 
         info_text = (
             "Karakteristik Aplikasi:\n"
@@ -352,16 +368,173 @@ class ZzzleepDesktopApp:
             "2. Generator nada alarm dihasilkan secara sintetis menggunakan modul audio bawaan.\n"
             "3. Berkas basis data dapat dicadangkan atau dipindahkan secara manual kapan saja."
         )
-        tk.Label(card, text=info_text, font=("Segoe UI", 10), fg="#e2e8f0", bg="#1e293b", justify="left").pack(anchor="w", padx=20, pady=8)
+        tk.Label(card, text=info_text, font=("Segoe UI", 9), fg="#e2e8f0", bg="#1e293b", justify="left").pack(anchor="w", padx=20, pady=4)
 
         btn_box = tk.Frame(card, bg="#1e293b")
-        btn_box.pack(anchor="w", padx=20, pady=20)
+        btn_box.pack(anchor="w", padx=20, pady=(12, 16))
 
-        btn_open = tk.Button(btn_box, text="Buka Folder Data", font=("Segoe UI", 9, "bold"), bg="#0284c7", fg="white", relief="flat", padx=12, pady=6, command=lambda: os.system(f'explorer /select,"{DATA_FILE}"'))
+        btn_open = tk.Button(btn_box, text="Buka Folder Data", font=("Segoe UI", 9, "bold"), bg="#0284c7", fg="white", relief="flat", padx=12, pady=5, command=lambda: os.system(f'explorer /select,"{DATA_FILE}"'))
         btn_open.pack(side="left", padx=(0, 8))
 
-        btn_save = tk.Button(btn_box, text="Simpan JSON Sekarang", font=("Segoe UI", 9), bg="#334155", fg="#f8fafc", relief="flat", padx=12, pady=6, command=self.save_data)
+        btn_save = tk.Button(btn_box, text="Simpan JSON Sekarang", font=("Segoe UI", 9), bg="#334155", fg="#f8fafc", relief="flat", padx=12, pady=5, command=self.save_data)
         btn_save.pack(side="left", padx=8)
+
+        # 2. Update & Version Sync Card
+        up_card = tk.Frame(container, bg="#1e293b")
+        up_card.pack(fill="both", expand=True, padx=6, pady=(0, 6))
+
+        tk.Label(up_card, text="🔄 SINKRONISASI & PEMBARUAN VERSI", font=("Segoe UI", 12, "bold"), fg="#10b981", bg="#1e293b").pack(anchor="w", padx=20, pady=(16, 4))
+        
+        up_meta = tk.Frame(up_card, bg="#1e293b")
+        up_meta.pack(fill="x", padx=20, pady=4)
+        
+        tk.Label(up_meta, text=f"Versi Aplikasi Saat Ini: v{APP_VERSION}", font=("Segoe UI", 10, "bold"), fg="#f8fafc", bg="#1e293b").pack(side="left")
+        
+        self.lbl_update_status = tk.Label(up_meta, text="● Siap memeriksa pembaruan", font=("Segoe UI", 9), fg="#94a3b8", bg="#1e293b")
+        self.lbl_update_status.pack(side="left", padx=14)
+
+        up_desc = (
+            "Sistem Auto-Update terhubung langsung dengan manifest versi di repository GitHub.\n"
+            "Ketika versi baru dirilis, aplikasi akan menampilkan pop-up detail changelog dan opsi unduh."
+        )
+        tk.Label(up_card, text=up_desc, font=("Segoe UI", 9), fg="#94a3b8", bg="#1e293b", justify="left").pack(anchor="w", padx=20, pady=6)
+
+        up_btn_box = tk.Frame(up_card, bg="#1e293b")
+        up_btn_box.pack(anchor="w", padx=20, pady=(8, 16))
+
+        self.btn_check_update = tk.Button(up_btn_box, text="🔄 Periksa Pembaruan Sekarang", font=("Segoe UI", 9, "bold"), bg="#059669", fg="white", activebackground="#047857", activeforeground="white", relief="flat", padx=14, pady=6, command=lambda: self.check_for_updates_async(silent=False))
+        self.btn_check_update.pack(side="left", padx=(0, 8))
+
+        btn_repo = tk.Button(up_btn_box, text="🌐 Buka GitHub Repository", font=("Segoe UI", 9), bg="#334155", fg="#f8fafc", relief="flat", padx=12, pady=6, command=lambda: webbrowser.open(GITHUB_REPO_URL))
+        btn_repo.pack(side="left", padx=8)
+
+    def check_for_updates_async(self, silent=True):
+        """Asynchronously checks version.json from GitHub."""
+        if hasattr(self, 'lbl_update_status'):
+            self.lbl_update_status.config(text="⏳ Memeriksa ke GitHub...", fg="#38bdf8")
+
+        def _worker():
+            try:
+                req = urllib.request.Request(
+                    UPDATE_MANIFEST_URL,
+                    headers={"User-Agent": f"ZZZleep-Desktop/{APP_VERSION}"}
+                )
+                with urllib.request.urlopen(req, timeout=6) as resp:
+                    if resp.status == 200:
+                        raw = resp.read().decode('utf-8')
+                        data = json.loads(raw)
+                        remote_ver = data.get("version", "1.0.0")
+                        
+                        if parse_version(remote_ver) > parse_version(APP_VERSION):
+                            self.root.after(0, lambda: self.on_update_found(data))
+                        else:
+                            self.root.after(0, lambda: self.on_update_up_to_date(remote_ver, silent))
+                        return
+            except Exception as e:
+                self.root.after(0, lambda: self.on_update_error(str(e), silent))
+
+        t = threading.Thread(target=_worker, daemon=True)
+        t.start()
+
+    def on_update_found(self, data):
+        new_ver = data.get("version", "1.0.0")
+        if hasattr(self, 'lbl_update_status'):
+            self.lbl_update_status.config(text=f"✨ Versi baru v{new_ver} tersedia!", fg="#10b981")
+        self.show_update_dialog(data)
+
+    def on_update_up_to_date(self, remote_ver, silent):
+        if hasattr(self, 'lbl_update_status'):
+            self.lbl_update_status.config(text=f"✓ Versi sudah paling mutakhir (v{APP_VERSION})", fg="#10b981")
+        if not silent:
+            messagebox.showinfo("Pembaruan Versi", f"Aplikasi ZZZleep sudah berada pada versi paling mutakhir (v{APP_VERSION}).")
+
+    def on_update_error(self, err_msg, silent):
+        if hasattr(self, 'lbl_update_status'):
+            self.lbl_update_status.config(text="● Mode offline / server tidak terjangkau", fg="#94a3b8")
+        if not silent:
+            messagebox.showwarning("Koneksi Pembaruan", "Tidak dapat menghubungi server GitHub. Periksa koneksi internet Anda.")
+
+    def show_update_dialog(self, data):
+        """Displays a modern dark-themed modal popup with update details and changelog."""
+        new_ver = data.get("version", "1.0.0")
+        rel_date = data.get("release_date", "")
+        changelog = data.get("changelog", [])
+        dl_url = data.get("download_url", GITHUB_REPO_URL)
+
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Pembaruan ZZZleep Tersedia")
+        dialog.geometry("540x480")
+        dialog.minsize(500, 440)
+        dialog.configure(bg="#0f172a")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        # Center relative to root window
+        dialog.update_idletasks()
+        rx = self.root.winfo_x()
+        ry = self.root.winfo_y()
+        rw = self.root.winfo_width()
+        rh = self.root.winfo_height()
+        dx = rx + (rw - 540) // 2
+        dy = ry + (rh - 480) // 2
+        dialog.geometry(f"+{max(0, dx)}+{max(0, dy)}")
+
+        # Header Box
+        hdr = tk.Frame(dialog, bg="#1e293b")
+        hdr.pack(fill="x")
+
+        tk.Label(hdr, text="🚀", font=("Segoe UI Emoji", 20), bg="#1e293b").pack(side="left", padx=(20, 10), pady=16)
+        h_info = tk.Frame(hdr, bg="#1e293b")
+        h_info.pack(side="left", fill="y", pady=14)
+
+        tk.Label(h_info, text="Pembaruan Baru Tersedia!", font=("Segoe UI", 12, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor="w")
+        sub_text = f"Versi v{new_ver} telah dirilis ({rel_date})" if rel_date else f"Versi v{new_ver} telah dirilis"
+        tk.Label(h_info, text=sub_text, font=("Segoe UI", 9), fg="#94a3b8", bg="#1e293b").pack(anchor="w")
+
+        # Body
+        body = tk.Frame(dialog, bg="#0f172a")
+        body.pack(fill="both", expand=True, padx=20, pady=14)
+
+        # Version Comparison Badge
+        v_box = tk.Frame(body, bg="#1e293b", padx=14, pady=10)
+        v_box.pack(fill="x", pady=(0, 12))
+
+        tk.Label(v_box, text=f"Versi Anda: v{APP_VERSION}", font=("Segoe UI", 9, "bold"), fg="#94a3b8", bg="#1e293b").pack(side="left")
+        tk.Label(v_box, text="  ➔  ", font=("Segoe UI", 10, "bold"), fg="#38bdf8", bg="#1e293b").pack(side="left")
+        tk.Label(v_box, text=f"Versi Terbaru: v{new_ver}", font=("Segoe UI", 9, "bold"), fg="#10b981", bg="#1e293b").pack(side="left")
+
+        # Changelog Header
+        tk.Label(body, text="Apa saja yang baru pada versi ini:", font=("Segoe UI", 10, "bold"), fg="#f8fafc", bg="#0f172a").pack(anchor="w", pady=(0, 6))
+
+        # Changelog List Container
+        cl_box = tk.Frame(body, bg="#1e293b", padx=14, pady=12)
+        cl_box.pack(fill="both", expand=True)
+
+        if changelog:
+            for item in changelog:
+                row = tk.Frame(cl_box, bg="#1e293b")
+                row.pack(fill="x", anchor="w", pady=3)
+                tk.Label(row, text="•", font=("Segoe UI", 10, "bold"), fg="#38bdf8", bg="#1e293b").pack(side="left", anchor="n", padx=(0, 8))
+                tk.Label(row, text=item, font=("Segoe UI", 9), fg="#e2e8f0", bg="#1e293b", wraplength=430, justify="left").pack(side="left", fill="x", expand=True)
+        else:
+            tk.Label(cl_box, text="Peningkatan performa dan pembaruan sistem.", font=("Segoe UI", 9, "italic"), fg="#94a3b8", bg="#1e293b").pack(anchor="w")
+
+        # Footer Actions
+        ftr = tk.Frame(dialog, bg="#1e293b", padx=16, pady=14)
+        ftr.pack(fill="x", side="bottom")
+
+        def _do_update():
+            webbrowser.open(dl_url)
+            dialog.destroy()
+
+        btn_update = tk.Button(ftr, text="⬇ Unduh Pembaruan", font=("Segoe UI", 9, "bold"), bg="#0284c7", fg="white", activebackground="#0369a1", activeforeground="white", relief="flat", padx=16, pady=6, command=_do_update)
+        btn_update.pack(side="right", padx=(8, 0))
+
+        btn_gh = tk.Button(ftr, text="🌐 Lihat di GitHub", font=("Segoe UI", 9), bg="#334155", fg="#f8fafc", relief="flat", padx=12, pady=6, command=lambda: webbrowser.open(GITHUB_REPO_URL))
+        btn_gh.pack(side="right", padx=6)
+
+        btn_cancel = tk.Button(ftr, text="Nanti Saja", font=("Segoe UI", 9), bg="#1e293b", fg="#94a3b8", relief="flat", padx=12, pady=6, command=dialog.destroy)
+        btn_cancel.pack(side="left")
 
     def start_background_timer(self):
         def _loop():
@@ -390,6 +563,7 @@ class ZzzleepDesktopApp:
                                 try:
                                     self.root.deiconify()
                                     self.root.lift()
+                                    self.root.focus_force()
                                 except Exception:
                                     pass
 

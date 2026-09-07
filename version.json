@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "release_date": "2026-09-07",
+  "title": "Pembaruan Sistem ZZZleep",
+  "changelog": [
+    "Audio synthesizer mandiri via winsound (tanpa dependensi file audio eksternal)",
+    "Pengingat istirahat mata 20-20-20 & timer Pomodoro fokus 25/5",
+    "Sistem pendeteksi pembaruan otomatis terintegrasi repository GitHub",
+    "Penyimpanan lokal preferensi & jadwal berbasis JSON"
+  ],
+  "download_url": "https://github.com/InfiniteNull/ZZZleep/releases/latest",
+  "github_repo_url": "https://github.com/InfiniteNull/ZZZleep"
+}

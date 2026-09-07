@@ -29,8 +29,8 @@
 
 <br />
 
-### 3. Penyimpanan Data JSON & Backup
-<img src="assets/vault_preview.png" alt="Data JSON & Backup" width="820" />
+### 3. Penyimpanan Data JSON & Pembaruan
+<img src="assets/vault_preview.png" alt="Data JSON & Pembaruan" width="820" />
 
 </div>
 
@@ -48,10 +48,14 @@
 3. **Timer Pomodoro (25/5)**
    - Siklus kerja fokus 25 menit diselingi istirahat 5 menit dengan notifikasi suara.
 
-4. **Penyimpanan Data Lokal JSON**
+4. **Sistem Auto-Update Terintegrasi GitHub**
+   - Mendeteksi rilis versi baru secara otomatis melalui file manifest `version.json` di GitHub repository.
+   - Menampilkan pop-up dialog rilis lengkap dengan perbandingan versi dan daftar changelog pembaruan.
+
+5. **Penyimpanan Data Lokal JSON**
    - Jadwal dan alarm tersimpan otomatis di direktori pengguna (`~/.zzzleep_desktop_data.json`) dan dapat dicadangkan secara mandiri.
 
-5. **Kompilasi Aplikasi Mandiri**
+6. **Kompilasi Aplikasi Mandiri**
    - Dapat dikompilasi menjadi satu berkas eksekusi mandiri tanpa perlu instalasi Python pada komputer target.
 
 ---
@@ -63,10 +67,11 @@ ZZZleep/
 ├── assets/
 │   ├── desktop_preview.png  # Tangkapan layar UI alarm & dashboard
 │   ├── timers_preview.png   # Tangkapan layar UI pomodoro & 20-20-20
-│   └── vault_preview.png    # Tangkapan layar UI penyimpanan data JSON
+│   └── vault_preview.png    # Tangkapan layar UI data JSON & update
 ├── desktop/
-│   ├── app.py               # Aplikasi desktop GUI (Tkinter)
+│   ├── app.py               # Aplikasi desktop GUI & Auto-Updater engine
 │   └── build_exe.py         # Script build PyInstaller
+├── version.json             # Manifest versi & changelog untuk auto-update
 ├── requirements.txt         # Dependensi build
 └── README.md                # Dokumentasi
 ```
@@ -100,7 +105,8 @@ Berkas eksekusi mandiri akan langsung tersedia di folder `desktop/dist/` dan sia
 ## Teknologi
 
 - **GUI**: Python 3 & Tkinter (Dark theme styling).
-- **Audio Engine**: Modul audio sintetis harmonis.
+- **Audio Engine**: Modul audio sintetis harmonis (`winsound`).
+- **Updater Engine**: Background non-blocking GitHub manifest fetcher (`urllib.request`).
 - **Packaging**: PyInstaller.
 - **Data**: Local JSON storage engine.
 
