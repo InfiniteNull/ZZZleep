@@ -104,15 +104,15 @@
         <div class="flex items-center gap-2">
           <button id="btnTab1" onclick="switchScreenshot(1)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white flex items-center gap-1.5 transition shadow-sm">
             <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i>
-            <span id="tab1Title">1. Alarm &amp; Jadwal</span>
+            <span id="tab1Title">1. Alarm &amp; Kalender Bulanan</span>
           </button>
           <button id="btnTab2" onclick="switchScreenshot(2)" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 border border-slate-200 dark:border-slate-800 transition">
             <i data-lucide="timer" class="w-3.5 h-3.5"></i>
-            <span id="tab2Title">2. Pomodoro &amp; Istirahat Layar</span>
+            <span id="tab2Title">2. Timer Progres Melingkar</span>
           </button>
           <button id="btnTab3" onclick="switchScreenshot(3)" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 border border-slate-200 dark:border-slate-800 transition">
-            <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
-            <span id="tab3Title">3. Data JSON &amp; Pembaruan</span>
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+            <span id="tab3Title">3. Pengaturan &amp; Pembaruan</span>
           </button>
         </div>
         <span class="text-[11px] font-mono text-slate-500" id="screenshotSub">Tangkapan Layar Asli Aplikasi Desktop (Tkinter GUI)</span>
@@ -234,35 +234,35 @@
         heroBadge: 'Aplikasi Desktop (Python & Tkinter GUI)',
         heroTitle: 'ZZZleep Desktop Application',
         heroDesc: 'Aplikasi manajemen waktu untuk laptop dan komputer: alarm audio sintetis (winsound), timer Pomodoro 25/5, pengingat istirahat mata 20-20-20, dan penyimpanan data lokal JSON.',
-        tab1Title: '1. Alarm & Jadwal',
-        tab2Title: '2. Pomodoro & Istirahat Layar',
-        tab3Title: '3. Data JSON & Pembaruan',
+        tab1Title: '1. Alarm & Kalender Bulanan',
+        tab2Title: '2. Timer Progres Melingkar',
+        tab3Title: '3. Pengaturan & Pembaruan',
         screenshotSub: 'Tangkapan Layar Asli Aplikasi Desktop (Tkinter GUI)',
         specHeading: 'Spesifikasi & Fitur Teknis',
         specList: `
+          <li class="flex items-start gap-2">
+            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
+            <span><strong>Sidebar Layout &amp; Mini Kalender:</strong> Navigasi sidebar kiri modern dan grid kalender bulanan interaktif.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
+            <span><strong>Time Picker Anti-Salah:</strong> Input waktu ganda (Jam : Menit) dengan pemisah titik dua permanen dan tombol preset instan.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
+            <span><strong>Circular Progress Rings:</strong> Cincin progres visual beranimasi untuk Timer Pomodoro (25/5) &amp; Istirahat Mata (20-20-20).</span>
+          </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
             <span><strong>5 Nada Suara Sintetis:</strong> Arpeggio C-Mayor, Digital Pulse (880/1760Hz), Harmonic Bell (440Hz), Ascending Chime, dan Zen Minimalist (520Hz).</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Sakelar Pengingat Layar 20-20-20:</strong> Kontrol ON/OFF dan kustomisasi interval (15m, 20m, 30m, 45m).</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Dukungan Dwibahasa &amp; Tema:</strong> Pilihan Bahasa Indonesia &amp; English serta Mode Gelap/Terang (Dark/Light).</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Timer Pomodoro (25/5):</strong> Siklus fokus kerja dan jeda istirahat dengan notifikasi suara.</span>
+            <span><strong>Dukungan Dwibahasa &amp; Tema:</strong> Bahasa Indonesia &amp; English serta Mode Gelap/Terang (Dark/Light).</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
             <span><strong>Auto-Update GitHub:</strong> Sinkronisasi manifest <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono">version.json</code> otomatis dengan dialog pop-up changelog.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Penyimpanan Lokal:</strong> Berkas tersimpan di <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono">~/.zzzleep_desktop_data.json</code>.</span>
           </li>
         `,
         buildHeading: 'Cara Menjalankan & Kompilasi'
@@ -273,20 +273,28 @@
         navSub: 'Desktop Calendar • Audio Alarm • Pomodoro',
         heroBadge: 'Desktop Application (Python & Tkinter GUI)',
         heroTitle: 'ZZZleep Desktop Application',
-        heroDesc: 'Time-management desktop application: 5 synthesized audio alarms (winsound), 25/5 Pomodoro timer, toggleable 20-20-20 screen rest reminder, bilingual language support, and local JSON storage.',
-        tab1Title: '1. Alarms & Schedule',
-        tab2Title: '2. Pomodoro & Screen Rest',
+        heroDesc: 'Time-management desktop application: modern sidebar navigation, circular progress rings, monthly calendar, 5 synthesized audio alarms (winsound), and bilingual dark/light theme support.',
+        tab1Title: '1. Alarms & Monthly Calendar',
+        tab2Title: '2. Circular Progress Timers',
         tab3Title: '3. Settings & Updates',
         screenshotSub: 'Real Native Desktop Application Screenshots (Tkinter GUI)',
         specHeading: 'Technical Specifications & Features',
         specList: `
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>5 Synthesized Audio Tones:</strong> Gentle Arpeggio (C-Major), Digital Pulse (880/1760Hz), Harmonic Bell (440Hz), Ascending Chime, and Zen Minimalist (520Hz).</span>
+            <span><strong>Sidebar Layout &amp; Monthly Calendar:</strong> Modern left navigation bar and interactive monthly calendar grid.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Screen Rest Toggle (20-20-20):</strong> ON/OFF switch with customizable intervals (15m, 20m, 30m, 45m).</span>
+            <span><strong>Dual Time Picker:</strong> Separate hours &amp; minutes spinboxes with permanent colon separator and instant presets.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
+            <span><strong>Circular Progress Rings:</strong> Smooth visual canvas rings for Pomodoro (25/5) &amp; Eye Rest (20-20-20) timers.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
+            <span><strong>5 Synthesized Audio Tones:</strong> Gentle Arpeggio (C-Major), Digital Pulse (880/1760Hz), Harmonic Bell (440Hz), Ascending Chime, and Zen Minimalist (520Hz).</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
@@ -294,15 +302,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Pomodoro Timer (25/5):</strong> Work/break interval cycles with audio notifications.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
             <span><strong>GitHub Auto-Update:</strong> Automatic synchronization via <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono">version.json</code> with popup changelog modal.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-sky-600 dark:text-sky-400 font-bold">•</span>
-            <span><strong>Local Storage:</strong> Saved automatically at <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono">~/.zzzleep_desktop_data.json</code>.</span>
           </li>
         `,
         buildHeading: 'Run & Build Instructions'

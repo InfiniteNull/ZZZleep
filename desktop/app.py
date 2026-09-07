@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import math
+import calendar
 import threading
 import datetime
 import urllib.request
@@ -34,54 +35,66 @@ DIRECT_EXE_URL = "https://github.com/InfiniteNull/ZZZleep/raw/main/bin/ZZZleep.e
 
 # Available Synthesized Sound Tones
 TONES = {
-    "gentle": "Arpeggio C-Mayor (Lembut / Gentle)",
-    "retro": "Digital Pulse (880Hz / 1760Hz)",
-    "bell": "Harmonic Bell (Resonansi 440Hz)",
-    "chime": "Ascending Chime (Melodi Naik)",
-    "zen": "Zen Minimalist (520Hz Akustik)"
+    "gentle": "Arpeggio C-Mayor",
+    "retro": "Digital Pulse (880/1760Hz)",
+    "bell": "Harmonic Bell (440Hz)",
+    "chime": "Ascending Chime (D-A)",
+    "zen": "Zen Minimalist (520Hz)"
 }
+
+# Day Names
+DAY_NAMES_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 # Theme Color Definitions
 THEMES = {
     "dark": {
-        "bg": "#0f172a",
+        "bg": "#0b0f19",
+        "sidebar_bg": "#0f172a",
         "card_bg": "#1e293b",
-        "subcard_bg": "#0f172a",
-        "header_bg": "#1e293b",
+        "subcard_bg": "#111827",
+        "ring_bg": "#334155",
         "text_primary": "#f8fafc",
         "text_secondary": "#94a3b8",
         "accent": "#0284c7",
         "accent_hover": "#0369a1",
         "accent_cyan": "#38bdf8",
-        "border": "#334155",
+        "border": "#1e293b",
+        "border_subtle": "#334155",
         "btn_bg": "#334155",
         "btn_fg": "#f8fafc",
         "entry_bg": "#0f172a",
         "entry_fg": "#38bdf8",
-        "tab_active_bg": "#0284c7",
-        "tab_active_fg": "#ffffff",
-        "tab_inactive_bg": "#1e293b",
-        "tab_inactive_fg": "#94a3b8"
+        "nav_active_bg": "#0284c7",
+        "nav_active_fg": "#ffffff",
+        "nav_inactive_bg": "#0f172a",
+        "nav_inactive_fg": "#94a3b8",
+        "ring_pomo": "#f43f5e",
+        "ring_eye": "#10b981"
     },
     "light": {
-        "bg": "#f8fafc",
+        "bg": "#f1f5f9",
+        "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
-        "subcard_bg": "#f1f5f9",
-        "header_bg": "#ffffff",
+        "subcard_bg": "#f8fafc",
+        "ring_bg": "#e2e8f0",
         "text_primary": "#0f172a",
         "text_secondary": "#64748b",
         "accent": "#0284c7",
         "accent_hover": "#0369a1",
         "accent_cyan": "#0284c7",
         "border": "#e2e8f0",
+        "border_subtle": "#cbd5e1",
         "btn_bg": "#e2e8f0",
         "btn_fg": "#1e293b",
-        "entry_bg": "#f1f5f9",
+        "entry_bg": "#f8fafc",
         "entry_fg": "#0284c7",
-        "tab_active_bg": "#0284c7",
-        "tab_active_fg": "#ffffff",
-        "tab_inactive_bg": "#e2e8f0",
-        "tab_inactive_fg": "#64748b"
+        "nav_active_bg": "#0284c7",
+        "nav_active_fg": "#ffffff",
+        "nav_inactive_bg": "#ffffff",
+        "nav_inactive_fg": "#64748b",
+        "ring_pomo": "#e11d48",
+        "ring_eye": "#059669"
     }
 }
 
@@ -90,35 +103,39 @@ I18N = {
     "id": {
         "app_title": "ZZZleep — Desktop Calendar & Audio Alarm",
         "brand": "⏰ ZZZleep",
+        "nav_alarms": "⏰  Alarm & Jadwal",
+        "nav_timers": "🍅  Timer & Layar",
+        "nav_settings": "⚙️  Pengaturan & Data",
+        "nav_hub": "🌐  Hub Portofolio",
         "local_time": "WAKTU LOKAL",
-        "tab_alarms": "  ⏰ Alarm & Jadwal  ",
-        "tab_timers": "  🍅 Pomodoro & Istirahat Layar  ",
-        "tab_settings": "  ⚙️ Pengaturan & Pembaruan  ",
+        "monthly_calendar": "KALENDER BULANAN",
         "new_alarm": "Tambah Alarm Baru",
-        "time_label": "Jam (HH:MM):",
+        "time_picker": "Waktu Alarm (Jam : Menit):",
+        "quick_presets": "Waktu Cepat:",
         "title_label": "Keterangan / Label:",
-        "tone_label": "Pilihan Nada Suara:",
+        "tone_label": "Nada Dering:",
+        "repeat_days": "Ulangi Hari:",
         "btn_add_alarm": "+ Pasang Alarm",
         "btn_test_tone": "🔊 Uji Suara",
         "active_alarms": "Daftar Alarm Aktif",
-        "no_alarms": "Belum ada alarm aktif.",
+        "no_alarms": "Belum ada alarm. Buat alarm baru di sebelah kiri.",
         "btn_active": "AKTIF",
         "btn_inactive": "NONAKTIF",
-        "pomo_title": "🍅 POMODORO FOCUS TIMER",
-        "btn_pomo_start": "Mulai Sesi (25m)",
-        "btn_pomo_pause": "Jeda Sesi",
-        "btn_pomo_resume": "Lanjutkan Sesi",
-        "btn_pomo_reset": "Reset",
-        "pomo_desc": "Siklus kerja fokus 25 menit diselingi istirahat 5 menit untuk menjaga konsentrasi kerja.",
-        "eye_title": "👁️ PENGINGAT ISTIRAHAT MATA (20-20-20)",
-        "eye_toggle_on": "Status: AKTIF (Mengingatkan Setiap Interval)",
-        "eye_toggle_off": "Status: NONAKTIF (Pengingat Dimatikan)",
-        "btn_eye_on": "🟢 Pengingat Aktif",
-        "btn_eye_off": "🔴 Pengingat Nonaktif",
-        "eye_interval_lbl": "Interval Istirahat:",
-        "btn_eye_reset": "Reset Interval",
-        "eye_desc": "Setiap 20 menit menatap layar monitor laptop/PC, pandang objek sejauh 6 meter (20 kaki) selama 20 detik guna mencegah ketegangan mata digital.",
-        "settings_heading": "⚙️ PREFERENSI SUARA & SISTEM",
+        "pomo_title": "POMODORO FOCUS TIMER",
+        "pomo_state_work": "SESI FOKUS KERJA",
+        "pomo_state_break": "SESI ISTIRAHAT",
+        "btn_pomo_start": "▶ Mulai Sesi",
+        "btn_pomo_pause": "⏸ Jeda",
+        "btn_pomo_resume": "▶ Lanjut",
+        "btn_pomo_reset": "↺ Reset",
+        "pomo_desc": "25 menit fokus kerja diselingi 5 menit istirahat untuk menjaga kesegaran berpikir.",
+        "eye_title": "PENGINGAT MATA 20-20-20",
+        "eye_toggle_on": "🟢 Pengingat Aktif",
+        "eye_toggle_off": "🔴 Pengingat Nonaktif",
+        "eye_interval_lbl": "Interval:",
+        "btn_eye_reset": "↺ Reset",
+        "eye_desc": "Tiap 20 menit menatap layar, pandang objek sejauh 6 meter selama 20 detik guna mencegah mata lelah.",
+        "settings_heading": "⚙️ PREFERENSI SUARA & TAMPILAN",
         "default_tone": "Nada Alarm Utama:",
         "app_language": "Bahasa Antarmuka:",
         "app_theme": "Tema Tampilan:",
@@ -126,58 +143,62 @@ I18N = {
         "theme_light": "☀️ Mode Terang (Light)",
         "storage_heading": "📁 PENYIMPANAN DATA LOKAL (JSON)",
         "storage_info": (
-            "1. Seluruh data preferensi & jadwal tersimpan secara lokal dalam format JSON.\n"
-            "2. Generator nada alarm dihasilkan secara sintetis menggunakan modul audio bawaan.\n"
-            "3. Berkas basis data dapat dicadangkan atau dipindahkan secara manual kapan saja."
+            "1. Seluruh jadwal dan preferensi tersimpan secara lokal dalam format JSON.\n"
+            "2. Nada alarm disintesis mandiri tanpa dependensi file eksternal.\n"
+            "3. Berkas data dapat dicadangkan atau dipindahkan secara manual kapan saja."
         ),
         "btn_open_folder": "Buka Folder Data",
         "btn_save_json": "Simpan JSON Sekarang",
         "update_heading": "🔄 SINKRONISASI & PEMBARUAN VERSI",
-        "current_ver": "Versi Aplikasi Saat Ini:",
-        "btn_check_update": "🔄 Periksa Pembaruan Sekarang",
+        "current_ver": "Versi Saat Ini:",
+        "btn_check_update": "🔄 Periksa Pembaruan",
         "btn_open_repo": "🌐 Buka GitHub Repository",
         "status_ready": "● Siap memeriksa pembaruan",
         "status_checking": "⏳ Memeriksa ke GitHub...",
         "status_latest": "✓ Versi sudah paling mutakhir (v1.1.0)",
         "status_new_avail": "✨ Versi baru tersedia!",
         "status_offline": "● Mode offline / server tidak terjangkau",
-        "format_err": "Masukkan format HH:MM yang valid (contoh: 07:30).",
-        "saved_ok": "Pengaturan & data berhasil disimpan ke file lokal.",
+        "format_err": "Masukkan jam (00-23) dan menit (00-59) yang valid.",
+        "saved_ok": "Pengaturan berhasil disimpan ke berkas lokal.",
         "up_to_date_msg": "Aplikasi ZZZleep sudah berada pada versi paling mutakhir (v1.1.0).",
         "conn_err_msg": "Tidak dapat menghubungi server GitHub. Periksa koneksi internet Anda."
     },
     "en": {
         "app_title": "ZZZleep — Desktop Calendar & Audio Alarm",
         "brand": "⏰ ZZZleep",
+        "nav_alarms": "⏰  Alarms & Schedule",
+        "nav_timers": "🍅  Focus & Screen Rest",
+        "nav_settings": "⚙️  Settings & Data",
+        "nav_hub": "🌐  Portfolio Hub",
         "local_time": "LOCAL TIME",
-        "tab_alarms": "  ⏰ Alarms & Schedule  ",
-        "tab_timers": "  🍅 Pomodoro & Screen Rest  ",
-        "tab_settings": "  ⚙️ Settings & Updates  ",
+        "monthly_calendar": "MONTHLY CALENDAR",
         "new_alarm": "Add New Alarm",
-        "time_label": "Time (HH:MM):",
+        "time_picker": "Alarm Time (Hour : Minute):",
+        "quick_presets": "Quick Times:",
         "title_label": "Label / Description:",
-        "tone_label": "Audio Tone Selection:",
+        "tone_label": "Sound Tone:",
+        "repeat_days": "Repeat Days:",
         "btn_add_alarm": "+ Set Alarm",
         "btn_test_tone": "🔊 Test Tone",
         "active_alarms": "Active Alarms List",
-        "no_alarms": "No active alarms yet.",
+        "no_alarms": "No active alarms yet. Create one on the left.",
         "btn_active": "ACTIVE",
         "btn_inactive": "INACTIVE",
-        "pomo_title": "🍅 POMODORO FOCUS TIMER",
-        "btn_pomo_start": "Start Session (25m)",
-        "btn_pomo_pause": "Pause Session",
-        "btn_pomo_resume": "Resume Session",
-        "btn_pomo_reset": "Reset",
+        "pomo_title": "POMODORO FOCUS TIMER",
+        "pomo_state_work": "FOCUS WORK SESSION",
+        "pomo_state_break": "REST BREAK SESSION",
+        "btn_pomo_start": "▶ Start Session",
+        "btn_pomo_pause": "⏸ Pause",
+        "btn_pomo_resume": "▶ Resume",
+        "btn_pomo_reset": "↺ Reset",
         "pomo_desc": "25-minute focused work cycles followed by 5-minute breaks to maintain productivity.",
-        "eye_title": "👁️ SCREEN REST REMINDER (20-20-20)",
-        "eye_toggle_on": "Status: ACTIVE (Alerts Every Interval)",
-        "eye_toggle_off": "Status: INACTIVE (Reminders Disabled)",
-        "btn_eye_on": "🟢 Reminder Active",
-        "btn_eye_off": "🔴 Reminder Inactive",
-        "eye_interval_lbl": "Rest Interval:",
-        "btn_eye_reset": "Reset Interval",
-        "eye_desc": "Every 20 minutes looking at screens, look at an object 20 feet (6 meters) away for 20 seconds to prevent digital eye strain.",
-        "settings_heading": "⚙️ AUDIO & SYSTEM PREFERENCES",
+        "eye_title": "20-20-20 SCREEN REST",
+        "eye_toggle_on": "🟢 Reminder Active",
+        "eye_toggle_off": "🔴 Reminder Disabled",
+        "eye_interval_lbl": "Interval:",
+        "btn_eye_reset": "↺ Reset",
+        "eye_desc": "Every 20 minutes looking at screens, look at an object 20 feet away for 20 seconds.",
+        "settings_heading": "⚙️ AUDIO & THEME PREFERENCES",
         "default_tone": "Default Alarm Tone:",
         "app_language": "Interface Language:",
         "app_theme": "UI Theme:",
@@ -185,23 +206,23 @@ I18N = {
         "theme_light": "☀️ Light Mode",
         "storage_heading": "📁 LOCAL DATA STORAGE (JSON)",
         "storage_info": (
-            "1. All preferences & schedules are stored locally in JSON format.\n"
+            "1. All schedules & preferences are stored locally in JSON format.\n"
             "2. Alarms are synthesized without external audio file dependencies.\n"
-            "3. Data files can be backed up manually anytime."
+            "3. Data files can be backed up or transferred manually anytime."
         ),
         "btn_open_folder": "Open Data Folder",
         "btn_save_json": "Save JSON Now",
         "update_heading": "🔄 VERSION SYNC & UPDATES",
-        "current_ver": "Current App Version:",
-        "btn_check_update": "🔄 Check for Updates Now",
+        "current_ver": "Current Version:",
+        "btn_check_update": "🔄 Check for Updates",
         "btn_open_repo": "🌐 Open GitHub Repository",
         "status_ready": "● Ready to check updates",
         "status_checking": "⏳ Checking GitHub...",
         "status_latest": "✓ App is up to date (v1.1.0)",
         "status_new_avail": "✨ New version available!",
         "status_offline": "● Offline mode / server unreachable",
-        "format_err": "Please enter a valid HH:MM time format (e.g. 07:30).",
-        "saved_ok": "Preferences & data saved to local file successfully.",
+        "format_err": "Please enter valid hours (00-23) and minutes (00-59).",
+        "saved_ok": "Preferences saved to local file successfully.",
         "up_to_date_msg": "ZZZleep is already at the latest version (v1.1.0).",
         "conn_err_msg": "Unable to connect to GitHub. Please check your internet connection."
     }
@@ -211,12 +232,7 @@ DEFAULT_DATA = {
     "alarms": [
         {"id": "alarm-1", "title": "Bangun Pagi & Stretching", "time": "06:00", "enabled": True, "days": [1, 2, 3, 4, 5], "tone": "gentle"},
         {"id": "alarm-2", "title": "Istirahat Siang & Makan", "time": "12:00", "enabled": True, "days": [1, 2, 3, 4, 5], "tone": "retro"},
-        {"id": "alarm-3", "title": "Tutup Laptop & Persiapan Tidur", "time": "22:30", "enabled": True, "days": [0, 1, 2, 3, 4, 5, 6], "tone": "bell"}
-    ],
-    "habits": [
-        {"id": "h-1", "name": "Minum Air Putih 2L", "target": 1, "completedDays": [1, 2, 3, 4, 5]},
-        {"id": "h-2", "name": "Stretching & Postur Tubuh", "target": 1, "completedDays": [1, 2, 3]},
-        {"id": "h-3", "name": "Jeda Layar 20-20-20 Rutin", "target": 1, "completedDays": [1, 2, 3, 4]}
+        {"id": "alarm-3", "title": "Tutup Laptop & Istirahat", "time": "22:30", "enabled": True, "days": [0, 1, 2, 3, 4, 5, 6], "tone": "bell"}
     ],
     "settings": {
         "soundTone": "gentle",
@@ -229,7 +245,6 @@ DEFAULT_DATA = {
 
 
 def parse_version(v_str):
-    """Parses semver string into comparable tuple."""
     try:
         clean = str(v_str).strip().lstrip('v')
         return tuple(int(x) for x in clean.split('.'))
@@ -295,24 +310,29 @@ class ZzzleepDesktopApp:
         self.eye_rest_enabled = settings.get("eyeRestEnabled", True)
         self.eye_interval_min = settings.get("eyeRestIntervalMin", 20)
 
+        self.current_nav = "alarms"  # "alarms", "timers", "settings"
+        self.selected_form_days = [0, 1, 2, 3, 4, 5, 6]
+
+        self.pomodoro_total_sec = 25 * 60
         self.pomodoro_seconds_left = 25 * 60
         self.pomodoro_is_running = False
+        self.pomodoro_is_break = False
+
+        self.eye_rest_total_sec = self.eye_interval_min * 60
         self.eye_rest_seconds_left = self.eye_interval_min * 60
 
         # UI Setup
         self.root.title(f"{APP_NAME} v{APP_VERSION}")
-        self.root.geometry("940x680")
-        self.root.minsize(860, 600)
+        self.root.geometry("980x680")
+        self.root.minsize(920, 620)
 
-        self.apply_theme_styles()
-        self.build_ui()
+        self.build_main_shell()
         self.start_background_timer()
 
-        # Check for updates in background 2 seconds after launch
+        # Check for updates in background 2s after launch
         self.root.after(2000, lambda: self.check_for_updates_async(silent=True))
 
     def t(self, key):
-        """Helper to get translated string for current language."""
         return I18N.get(self.current_lang, I18N["id"]).get(key, key)
 
     def load_data(self):
@@ -320,7 +340,6 @@ class ZzzleepDesktopApp:
             try:
                 with open(DATA_FILE, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                    # Merge with default structure
                     if "settings" not in d:
                         d["settings"] = DEFAULT_DATA["settings"].copy()
                     return d
@@ -341,421 +360,611 @@ class ZzzleepDesktopApp:
         except Exception as e:
             print(f"Failed to save data: {e}")
 
-    def apply_theme_styles(self):
-        """Configures ttk styles matching current theme palette."""
-        th = THEMES[self.current_theme]
-        self.root.configure(bg=th["bg"])
-
-        self.style = ttk.Style()
-        self.style.theme_use("clam")
-
-        self.style.configure("TNotebook", background=th["bg"], borderwidth=0)
-        self.style.configure("TNotebook.Tab", background=th["tab_inactive_bg"], foreground=th["tab_inactive_fg"], padding=[16, 8], font=("Segoe UI", 10, "bold"))
-        self.style.map("TNotebook.Tab",
-                       background=[("selected", th["tab_active_bg"])],
-                       foreground=[("selected", th["tab_active_fg"])])
-
-        self.style.configure("TFrame", background=th["bg"])
-        self.style.configure("Card.TFrame", background=th["card_bg"], relief="flat")
-        self.style.configure("TLabel", background=th["bg"], foreground=th["text_primary"], font=("Segoe UI", 10))
+    def switch_nav(self, nav_key):
+        self.current_nav = nav_key
+        self.render_content_view()
+        self.update_sidebar_buttons()
 
     def toggle_language(self):
         self.current_lang = "en" if self.current_lang == "id" else "id"
         self.save_data()
-        self.rebuild_full_ui()
+        self.rebuild_ui()
 
     def toggle_theme(self):
         self.current_theme = "light" if self.current_theme == "dark" else "dark"
         self.save_data()
-        self.apply_theme_styles()
-        self.rebuild_full_ui()
+        self.rebuild_ui()
 
-    def rebuild_full_ui(self):
+    def rebuild_ui(self):
         for w in self.root.winfo_children():
             w.destroy()
-        self.build_ui()
+        self.build_main_shell()
 
-    def build_ui(self):
+    def build_main_shell(self):
+        th = THEMES[self.current_theme]
+        self.root.configure(bg=th["bg"])
+
+        # Main horizontal container
+        self.shell_frame = tk.Frame(self.root, bg=th["bg"])
+        self.shell_frame.pack(fill="both", expand=True)
+
+        # 1. Left Sidebar
+        self.sidebar = tk.Frame(self.shell_frame, bg=th["sidebar_bg"], width=230, highlightthickness=1, highlightbackground=th["border"])
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
+
+        # Sidebar Header (Brand)
+        brand_frame = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
+        brand_frame.pack(fill="x", padx=16, pady=(18, 20))
+
+        tk.Label(brand_frame, text=self.t("brand"), font=("Segoe UI", 15, "bold"), fg=th["accent_cyan"], bg=th["sidebar_bg"]).pack(side="left")
+        tk.Label(brand_frame, text=f"v{APP_VERSION}", font=("Consolas", 8, "bold"), fg=th["text_secondary"], bg=th["subcard_bg"], padx=6, pady=2).pack(side="left", padx=8)
+
+        # Navigation Menu Buttons
+        self.nav_btns = {}
+        nav_items = [
+            ("alarms", self.t("nav_alarms")),
+            ("timers", self.t("nav_timers")),
+            ("settings", self.t("nav_settings")),
+        ]
+
+        menu_box = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
+        menu_box.pack(fill="x", padx=10, pady=4)
+
+        for key, label in nav_items:
+            btn = tk.Button(
+                menu_box,
+                text=label,
+                font=("Segoe UI", 10, "bold"),
+                anchor="w",
+                relief="flat",
+                padx=14,
+                pady=10,
+                cursor="hand2",
+                command=lambda k=key: self.switch_nav(k)
+            )
+            btn.pack(fill="x", pady=3)
+            self.nav_btns[key] = btn
+
+        # Sidebar Bottom Controls (Language, Theme, Hub)
+        bot_box = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
+        bot_box.pack(side="bottom", fill="x", padx=14, pady=16)
+
+        # Quick Theme & Lang Row
+        toggle_row = tk.Frame(bot_box, bg=th["sidebar_bg"])
+        toggle_row.pack(fill="x", pady=(0, 10))
+
+        lang_label = "🌐 ID" if self.current_lang == "id" else "🌐 EN"
+        btn_lang = tk.Button(toggle_row, text=lang_label, font=("Segoe UI", 8, "bold"), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=self.toggle_language)
+        btn_lang.pack(side="left", expand=True, fill="x", padx=(0, 4))
+
+        theme_label = "🌙 Dark" if self.current_theme == "dark" else "☀️ Light"
+        btn_theme = tk.Button(toggle_row, text=theme_label, font=("Segoe UI", 8, "bold"), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=self.toggle_theme)
+        btn_theme.pack(side="right", expand=True, fill="x", padx=(4, 0))
+
+        # Hub Link
+        btn_hub = tk.Button(bot_box, text=self.t("nav_hub") + " ↗", font=("Segoe UI", 8), bg=th["sidebar_bg"], fg=th["text_secondary"], activeforeground=th["accent_cyan"], relief="flat", cursor="hand2", command=lambda: webbrowser.open("https://infinitenull.github.io/"))
+        btn_hub.pack(fill="x")
+
+        # 2. Right Content Area
+        self.content_area = tk.Frame(self.shell_frame, bg=th["bg"])
+        self.content_area.pack(side="right", fill="both", expand=True, padx=16, pady=16)
+
+        self.update_sidebar_buttons()
+        self.render_content_view()
+
+    def update_sidebar_buttons(self):
+        th = THEMES[self.current_theme]
+        for key, btn in self.nav_btns.items():
+            if key == self.current_nav:
+                btn.config(bg=th["nav_active_bg"], fg=th["nav_active_fg"], activebackground=th["accent_hover"], activeforeground="white")
+            else:
+                btn.config(bg=th["nav_inactive_bg"], fg=th["nav_inactive_fg"], activebackground=th["btn_bg"], activeforeground=th["text_primary"])
+
+    def render_content_view(self):
+        for w in self.content_area.winfo_children():
+            w.destroy()
+
+        if self.current_nav == "alarms":
+            self.build_alarms_view(self.content_area)
+        elif self.current_nav == "timers":
+            self.build_timers_view(self.content_area)
+        elif self.current_nav == "settings":
+            self.build_settings_view(self.content_area)
+
+    # =========================================================================
+    # VIEW 1: ALARMS & MONTHLY CALENDAR
+    # =========================================================================
+    def build_alarms_view(self, parent):
         th = THEMES[self.current_theme]
 
-        # Top Header Bar
-        header = tk.Frame(self.root, bg=th["header_bg"], height=58, highlightthickness=1, highlightbackground=th["border"])
-        header.pack(fill="x", side="top")
+        # Top Bar: Big Local Clock & Active Alarms Status
+        top_bar = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        top_bar.pack(fill="x", pady=(0, 12))
 
-        # Brand & Version
-        brand_box = tk.Frame(header, bg=th["header_bg"])
-        brand_box.pack(side="left", padx=16, pady=10)
+        # Left Top: Digital Clock & Date
+        clock_box = tk.Frame(top_bar, bg=th["card_bg"])
+        clock_box.pack(side="left", padx=16, pady=10)
 
-        tk.Label(brand_box, text=self.t("brand"), font=("Segoe UI", 13, "bold"), fg=th["accent_cyan"], bg=th["header_bg"]).pack(side="left")
-        tk.Label(brand_box, text=f"v{APP_VERSION}", font=("Consolas", 9, "bold"), fg=th["text_secondary"], bg=th["subcard_bg"], padx=6, pady=2).pack(side="left", padx=8)
+        self.clock_lbl = tk.Label(clock_box, text="00:00:00", font=("Consolas", 22, "bold"), fg=th["accent_cyan"], bg=th["card_bg"])
+        self.clock_lbl.pack(anchor="w")
+        self.date_lbl = tk.Label(clock_box, text="Loading date...", font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"])
+        self.date_lbl.pack(anchor="w")
 
-        # Header Right Controls (Theme, Language, Clock)
-        ctrl_box = tk.Frame(header, bg=th["header_bg"])
-        ctrl_box.pack(side="right", padx=16)
+        # Right Top: Alarm Status Pill
+        active_count = len([a for a in self.data.get("alarms", []) if a.get("enabled", True)])
+        pill_txt = f"🔔 {active_count} Alarm Aktif" if self.current_lang == "id" else f"🔔 {active_count} Alarms Active"
+        tk.Label(top_bar, text=pill_txt, font=("Segoe UI", 9, "bold"), fg="#10b981", bg=th["subcard_bg"], padx=12, pady=6).pack(side="right", padx=16)
 
-        # Language Toggle Button
-        lang_text = "🌐 ID" if self.current_lang == "id" else "🌐 EN"
-        btn_lang = tk.Button(ctrl_box, text=lang_text, font=("Segoe UI", 9, "bold"), bg=th["btn_bg"], fg=th["text_primary"], activebackground=th["accent"], activeforeground="white", relief="flat", padx=8, pady=3, command=self.toggle_language)
-        btn_lang.pack(side="left", padx=4)
+        # Dual Column Layout
+        cols = tk.Frame(parent, bg=th["bg"])
+        cols.pack(fill="both", expand=True)
 
-        # Theme Toggle Button
-        theme_icon = "🌙" if self.current_theme == "dark" else "☀️"
-        btn_theme = tk.Button(ctrl_box, text=theme_icon, font=("Segoe UI", 9, "bold"), bg=th["btn_bg"], fg=th["text_primary"], activebackground=th["accent"], activeforeground="white", relief="flat", padx=8, pady=3, command=self.toggle_theme)
-        btn_theme.pack(side="left", padx=4)
+        # Left Column: Add Alarm Form (Width ~340px)
+        left_col = tk.Frame(cols, bg=th["card_bg"], width=350, highlightthickness=1, highlightbackground=th["border"])
+        left_col.pack(side="left", fill="both", padx=(0, 10))
+        left_col.pack_propagate(False)
 
-        # Top Clock
-        self.top_clock = tk.Label(ctrl_box, text="--:--:--", font=("Consolas", 12, "bold"), fg=th["text_primary"], bg=th["header_bg"])
-        self.top_clock.pack(side="left", padx=(10, 0))
+        tk.Label(left_col, text=self.t("new_alarm"), font=("Segoe UI", 11, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(14, 6))
 
-        # Main Notebook Tabs
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=12, pady=10)
+        # --- Dual Spinbox Time Picker (NO ACCIDENTAL DELETING COLON) ---
+        tk.Label(left_col, text=self.t("time_picker"), font=("Segoe UI", 9, "bold"), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(4, 4))
+        
+        picker_box = tk.Frame(left_col, bg=th["card_bg"])
+        picker_box.pack(anchor="w", padx=16, pady=(0, 6))
 
-        # Tab 1: Alarms
-        tab_alarms = ttk.Frame(self.notebook)
-        self.notebook.add(tab_alarms, text=self.t("tab_alarms"))
-        self.build_alarms_tab(tab_alarms)
+        # Hour Spinbox
+        self.spin_hour = tk.Spinbox(picker_box, from_=0, to=23, format="%02.0f", width=3, font=("Consolas", 16, "bold"), justify="center", bg=th["entry_bg"], fg=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
+        self.spin_hour.delete(0, "end")
+        self.spin_hour.insert(0, "07")
+        self.spin_hour.pack(side="left")
 
-        # Tab 2: Timers & Eye Rest
-        tab_timers = ttk.Frame(self.notebook)
-        self.notebook.add(tab_timers, text=self.t("tab_timers"))
-        self.build_timers_tab(tab_timers)
+        # Fixed Permanent Colon
+        tk.Label(picker_box, text=" : ", font=("Consolas", 18, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left", padx=4)
 
-        # Tab 3: Settings, Data & Updates
-        tab_settings = ttk.Frame(self.notebook)
-        self.notebook.add(tab_settings, text=self.t("tab_settings"))
-        self.build_settings_tab(tab_settings)
+        # Minute Spinbox
+        self.spin_min = tk.Spinbox(picker_box, from_=0, to=59, format="%02.0f", width=3, font=("Consolas", 16, "bold"), justify="center", bg=th["entry_bg"], fg=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
+        self.spin_min.delete(0, "end")
+        self.spin_min.insert(0, "30")
+        self.spin_min.pack(side="left")
 
-    def build_alarms_tab(self, parent):
-        th = THEMES[self.current_theme]
-        container = tk.Frame(parent, bg=th["bg"])
-        container.pack(fill="both", expand=True, padx=6, pady=6)
+        # Quick Preset Buttons Row
+        preset_row = tk.Frame(left_col, bg=th["card_bg"])
+        preset_row.pack(anchor="w", padx=16, pady=(0, 10))
+        for p_h, p_m in [("06", "00"), ("08", "00"), ("12", "00"), ("22", "30")]:
+            btn_p = tk.Button(preset_row, text=f"{p_h}:{p_m}", font=("Consolas", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=6, pady=2, cursor="hand2", command=lambda h=p_h, m=p_m: self.set_picker_time(h, m))
+            btn_p.pack(side="left", padx=(0, 4))
 
-        # Left Column (Clock & Add Form)
-        left = tk.Frame(container, bg=th["card_bg"], width=330, highlightthickness=1, highlightbackground=th["border"])
-        left.pack(side="left", fill="y", padx=6, pady=6)
-        left.pack_propagate(False)
-
-        tk.Label(left, text=self.t("local_time"), font=("Segoe UI", 8, "bold"), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(16, 2))
-        self.clock_lbl = tk.Label(left, text="00:00:00", font=("Consolas", 26, "bold"), fg=th["accent_cyan"], bg=th["card_bg"])
-        self.clock_lbl.pack(anchor="w", padx=16)
-        self.date_lbl = tk.Label(left, text="Loading...", font=("Segoe UI", 10), fg=th["text_secondary"], bg=th["card_bg"])
-        self.date_lbl.pack(anchor="w", padx=16, pady=(0, 14))
-
-        tk.Frame(left, height=1, bg=th["border"]).pack(fill="x", padx=16, pady=4)
-
-        tk.Label(left, text=self.t("new_alarm"), font=("Segoe UI", 11, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(8, 4))
-
-        # Time Input
-        tk.Label(left, text=self.t("time_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(4, 2))
-        self.entry_time = tk.Entry(left, font=("Consolas", 12), bg=th["entry_bg"], fg=th["entry_fg"], insertbackground=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border"])
-        self.entry_time.insert(0, "07:30")
-        self.entry_time.pack(fill="x", padx=16, ipady=4)
-
-        # Title Input
-        tk.Label(left, text=self.t("title_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(6, 2))
-        self.entry_title = tk.Entry(left, font=("Segoe UI", 10), bg=th["entry_bg"], fg=th["text_primary"], insertbackground=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border"])
+        # Label Entry
+        tk.Label(left_col, text=self.t("title_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(2, 2))
+        self.entry_title = tk.Entry(left_col, font=("Segoe UI", 10), bg=th["entry_bg"], fg=th["text_primary"], insertbackground=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
         self.entry_title.insert(0, "Mulai Kerja Pagi" if self.current_lang == "id" else "Morning Deep Work")
         self.entry_title.pack(fill="x", padx=16, ipady=4)
 
-        # Sound Tone Selector
-        tk.Label(left, text=self.t("tone_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(6, 2))
-        
-        self.var_alarm_tone = tk.StringVar(value=self.current_tone)
-        tone_box = tk.Frame(left, bg=th["card_bg"])
+        # Tone Selector with Test Button
+        tk.Label(left_col, text=self.t("tone_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(8, 2))
+        tone_box = tk.Frame(left_col, bg=th["card_bg"])
         tone_box.pack(fill="x", padx=16)
 
-        tone_options = list(TONES.keys())
-        self.combo_tone = ttk.Combobox(tone_box, textvariable=self.var_alarm_tone, values=tone_options, state="readonly", font=("Segoe UI", 9))
+        self.var_alarm_tone = tk.StringVar(value=self.current_tone)
+        self.combo_tone = ttk.Combobox(tone_box, textvariable=self.var_alarm_tone, values=list(TONES.keys()), state="readonly", font=("Segoe UI", 9))
         self.combo_tone.pack(side="left", fill="x", expand=True)
 
-        btn_test_mini = tk.Button(tone_box, text="🔊", font=("Segoe UI", 9, "bold"), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=6, command=lambda: play_audio_tone(self.var_alarm_tone.get()))
-        btn_test_mini.pack(side="right", padx=(4, 0))
+        btn_test = tk.Button(tone_box, text="🔊", font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=8, cursor="hand2", command=lambda: play_audio_tone(self.var_alarm_tone.get()))
+        btn_test.pack(side="right", padx=(4, 0))
 
-        # Buttons
-        btn_add = tk.Button(left, text=self.t("btn_add_alarm"), font=("Segoe UI", 10, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", command=self.add_alarm)
-        btn_add.pack(fill="x", padx=16, pady=(16, 6), ipady=5)
+        # Day Pills Selector (Sun - Sat)
+        tk.Label(left_col, text=self.t("repeat_days"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(8, 4))
+        day_pills_row = tk.Frame(left_col, bg=th["card_bg"])
+        day_pills_row.pack(anchor="w", padx=16)
 
-        # Right Column (List of Alarms)
-        right = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        right.pack(side="right", fill="both", expand=True, padx=6, pady=6)
+        day_labels = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
+        self.day_buttons = []
+        for i in range(7):
+            d_btn = tk.Button(
+                day_pills_row,
+                text=day_labels[i],
+                font=("Segoe UI", 7, "bold"),
+                width=3,
+                bg=th["accent"] if i in self.selected_form_days else th["btn_bg"],
+                fg="white" if i in self.selected_form_days else th["text_secondary"],
+                relief="flat",
+                cursor="hand2",
+                command=lambda day_idx=i: self.toggle_form_day(day_idx)
+            )
+            d_btn.pack(side="left", padx=1)
+            self.day_buttons.append(d_btn)
 
-        header_r = tk.Frame(right, bg=th["card_bg"])
-        header_r.pack(fill="x", padx=16, pady=12)
-        tk.Label(header_r, text=self.t("active_alarms"), font=("Segoe UI", 12, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(side="left")
+        # Submit Button
+        btn_add = tk.Button(left_col, text=self.t("btn_add_alarm"), font=("Segoe UI", 10, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", cursor="hand2", command=self.add_alarm_from_picker)
+        btn_add.pack(fill="x", padx=16, pady=(16, 12), ipady=5)
 
-        self.alarms_frame = tk.Frame(right, bg=th["card_bg"])
-        self.alarms_frame.pack(fill="both", expand=True, padx=16, pady=(0, 16))
+        # Right Column: Mini Calendar (Top) + Alarms List (Bottom)
+        right_col = tk.Frame(cols, bg=th["bg"])
+        right_col.pack(side="right", fill="both", expand=True)
 
-        self.refresh_alarms()
+        # Mini Calendar Card (Height ~170px)
+        cal_card = tk.Frame(right_col, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        cal_card.pack(fill="x", pady=(0, 10))
+        self.build_mini_calendar(cal_card)
 
-    def refresh_alarms(self):
+        # Alarms List Card (Remaining height)
+        list_card = tk.Frame(right_col, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        list_card.pack(fill="both", expand=True)
+
+        tk.Label(list_card, text=self.t("active_alarms"), font=("Segoe UI", 11, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 6))
+
+        self.alarms_frame = tk.Frame(list_card, bg=th["card_bg"])
+        self.alarms_frame.pack(fill="both", expand=True, padx=16, pady=(0, 12))
+
+        self.refresh_alarms_list()
+
+    def set_picker_time(self, h, m):
+        self.spin_hour.delete(0, "end")
+        self.spin_hour.insert(0, h)
+        self.spin_min.delete(0, "end")
+        self.spin_min.insert(0, m)
+
+    def toggle_form_day(self, day_idx):
+        th = THEMES[self.current_theme]
+        if day_idx in self.selected_form_days:
+            if len(self.selected_form_days) > 1:
+                self.selected_form_days.remove(day_idx)
+        else:
+            self.selected_form_days.append(day_idx)
+            self.selected_form_days.sort()
+
+        for i, btn in enumerate(self.day_buttons):
+            if i in self.selected_form_days:
+                btn.config(bg=th["accent"], fg="white")
+            else:
+                btn.config(bg=th["btn_bg"], fg=th["text_secondary"])
+
+    def build_mini_calendar(self, parent):
+        th = THEMES[self.current_theme]
+        now = datetime.datetime.now()
+        year, month = now.year, now.month
+        
+        cal_hdr = tk.Frame(parent, bg=th["card_bg"])
+        cal_hdr.pack(fill="x", padx=14, pady=(8, 4))
+
+        month_name = now.strftime("%B %Y")
+        tk.Label(cal_hdr, text=f"📅 {month_name.upper()}", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left")
+        tk.Label(cal_hdr, text=f"Hari Ini: {now.day}", font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="right")
+
+        # Calendar Grid Table
+        grid_frame = tk.Frame(parent, bg=th["card_bg"])
+        grid_frame.pack(fill="x", padx=14, pady=(0, 8))
+
+        day_headers = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
+        for col_idx, d_name in enumerate(day_headers):
+            tk.Label(grid_frame, text=d_name, font=("Segoe UI", 8, "bold"), fg=th["text_secondary"], bg=th["card_bg"], width=4).grid(row=0, column=col_idx, padx=2, pady=1)
+
+        # Sunday first indexing
+        cal = calendar.Calendar(firstweekday=6)
+        month_days = cal.monthdayscalendar(year, month)
+
+        for r_idx, week in enumerate(month_days):
+            for c_idx, day_num in enumerate(week):
+                if day_num == 0:
+                    lbl = tk.Label(grid_frame, text="", bg=th["card_bg"], width=4)
+                else:
+                    is_today = (day_num == now.day)
+                    bg_col = th["accent"] if is_today else th["subcard_bg"]
+                    fg_col = "white" if is_today else th["text_primary"]
+                    lbl = tk.Label(grid_frame, text=str(day_num), font=("Segoe UI", 8, "bold" if is_today else "normal"), bg=bg_col, fg=fg_col, width=4, pady=1)
+                lbl.grid(row=r_idx + 1, column=c_idx, padx=2, pady=1)
+
+    def refresh_alarms_list(self):
         th = THEMES[self.current_theme]
         for w in self.alarms_frame.winfo_children():
             w.destroy()
 
         alarms = self.data.get("alarms", [])
         if not alarms:
-            tk.Label(self.alarms_frame, text=self.t("no_alarms"), fg=th["text_secondary"], bg=th["card_bg"], font=("Segoe UI", 10, "italic")).pack(pady=30)
+            tk.Label(self.alarms_frame, text=self.t("no_alarms"), fg=th["text_secondary"], bg=th["card_bg"], font=("Segoe UI", 9, "italic")).pack(pady=20)
             return
 
-        for a in alarms:
-            card = tk.Frame(self.alarms_frame, bg=th["subcard_bg"], relief="flat", highlightthickness=1, highlightbackground=th["border"])
-            card.pack(fill="x", pady=4)
+        day_labels = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
 
+        for a in alarms:
+            card = tk.Frame(self.alarms_frame, bg=th["subcard_bg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
+            card.pack(fill="x", pady=3)
+
+            # Left: Time & Info
             left_box = tk.Frame(card, bg=th["subcard_bg"])
-            left_box.pack(side="left", padx=12, pady=8)
+            left_box.pack(side="left", padx=12, pady=6)
 
             time_col = th["accent_cyan"] if a.get("enabled", True) else th["text_secondary"]
-            tk.Label(left_box, text=a["time"], font=("Consolas", 18, "bold"), fg=time_col, bg=th["subcard_bg"]).pack(anchor="w")
-            
-            label_text = a.get("title", "Alarm")
-            tone_name = a.get("tone", "gentle")
-            tk.Label(left_box, text=f"{label_text}  •  🎵 {tone_name}", font=("Segoe UI", 9, "bold" if a.get("enabled", True) else "normal"), fg=th["text_primary"] if a.get("enabled", True) else th["text_secondary"], bg=th["subcard_bg"]).pack(anchor="w")
+            tk.Label(left_box, text=a["time"], font=("Consolas", 17, "bold"), fg=time_col, bg=th["subcard_bg"]).pack(anchor="w")
 
+            # Day Chips sub-row
+            chips_row = tk.Frame(left_box, bg=th["subcard_bg"])
+            chips_row.pack(anchor="w", pady=(2, 0))
+            tk.Label(chips_row, text=a.get("title", "Alarm"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"] if a.get("enabled", True) else th["text_secondary"], bg=th["subcard_bg"]).pack(side="left", padx=(0, 6))
+
+            for d_i in range(7):
+                in_days = d_i in a.get("days", [0, 1, 2, 3, 4, 5, 6])
+                d_fg = th["accent_cyan"] if (in_days and a.get("enabled", True)) else th["border_subtle"]
+                tk.Label(chips_row, text=day_labels[d_i][0], font=("Consolas", 7, "bold"), fg=d_fg, bg=th["subcard_bg"]).pack(side="left", padx=1)
+
+            # Right: Action Buttons
             right_box = tk.Frame(card, bg=th["subcard_bg"])
-            right_box.pack(side="right", padx=12, pady=8)
+            right_box.pack(side="right", padx=12, pady=6)
 
             st_text = self.t("btn_active") if a.get("enabled", True) else self.t("btn_inactive")
             st_bg = "#059669" if a.get("enabled", True) else "#64748b"
-            t_btn = tk.Button(right_box, text=st_text, font=("Segoe UI", 8, "bold"), bg=st_bg, fg="white", relief="flat", padx=8, pady=3, command=lambda item=a: self.toggle_alarm(item))
-            t_btn.pack(side="left", padx=4)
+            t_btn = tk.Button(right_box, text=st_text, font=("Segoe UI", 8, "bold"), bg=st_bg, fg="white", relief="flat", padx=8, pady=2, cursor="hand2", command=lambda item=a: self.toggle_alarm(item))
+            t_btn.pack(side="left", padx=3)
 
-            btn_test_alarm = tk.Button(right_box, text="🔊", font=("Segoe UI", 8, "bold"), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=6, pady=3, command=lambda item=a: play_audio_tone(item.get("tone", "gentle")))
-            btn_test_alarm.pack(side="left", padx=4)
+            btn_test = tk.Button(right_box, text="🔊", font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=6, pady=2, cursor="hand2", command=lambda item=a: play_audio_tone(item.get("tone", "gentle")))
+            btn_test.pack(side="left", padx=3)
 
-            d_btn = tk.Button(right_box, text="✕", font=("Segoe UI", 8, "bold"), bg="#dc2626", fg="white", relief="flat", padx=6, pady=3, command=lambda a_id=a["id"]: self.delete_alarm(a_id))
-            d_btn.pack(side="left", padx=4)
+            d_btn = tk.Button(right_box, text="✕", font=("Segoe UI", 8, "bold"), bg="#dc2626", fg="white", relief="flat", padx=6, pady=2, cursor="hand2", command=lambda a_id=a["id"]: self.delete_alarm(a_id))
+            d_btn.pack(side="left", padx=3)
 
-    def add_alarm(self):
-        t_str = self.entry_time.get().strip()
-        title = self.entry_title.get().strip() or "Alarm"
-        tone = self.var_alarm_tone.get()
-
+    def add_alarm_from_picker(self):
         try:
-            parts = t_str.split(":")
-            h, m = int(parts[0]), int(parts[1])
+            h = int(self.spin_hour.get())
+            m = int(self.spin_min.get())
             if not (0 <= h < 24 and 0 <= m < 60):
                 raise ValueError
             valid_time = f"{h:02d}:{m:02d}"
         except Exception:
-            messagebox.showerror("Format Error", self.t("format_err"))
+            messagebox.showerror("Error", self.t("format_err"))
             return
+
+        title = self.entry_title.get().strip() or "Alarm"
+        tone = self.var_alarm_tone.get()
 
         new_a = {
             "id": f"alarm-{int(time.time()*1000)}",
             "title": title,
             "time": valid_time,
             "enabled": True,
-            "days": [0, 1, 2, 3, 4, 5, 6],
+            "days": list(self.selected_form_days),
             "tone": tone
         }
         self.data["alarms"].append(new_a)
         self.save_data()
-        self.refresh_alarms()
+        self.refresh_alarms_list()
 
     def toggle_alarm(self, a):
         a["enabled"] = not a.get("enabled", True)
         self.save_data()
-        self.refresh_alarms()
+        self.refresh_alarms_list()
 
     def delete_alarm(self, a_id):
         self.data["alarms"] = [a for a in self.data.get("alarms", []) if a.get("id") != a_id]
         self.save_data()
-        self.refresh_alarms()
+        self.refresh_alarms_list()
 
-    def build_timers_tab(self, parent):
+    # =========================================================================
+    # VIEW 2: FOCUS TIMERS & CIRCULAR PROGRESS RINGS
+    # =========================================================================
+    def build_timers_view(self, parent):
         th = THEMES[self.current_theme]
-        container = tk.Frame(parent, bg=th["bg"])
-        container.pack(fill="both", expand=True, padx=6, pady=6)
 
-        # Left: Pomodoro Card
-        pomo = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        pomo.pack(side="left", fill="both", expand=True, padx=6, pady=6)
+        cards_row = tk.Frame(parent, bg=th["bg"])
+        cards_row.pack(fill="both", expand=True)
 
-        tk.Label(pomo, text=self.t("pomo_title"), font=("Segoe UI", 12, "bold"), fg="#f43f5e", bg=th["card_bg"]).pack(pady=(20, 10))
-        self.pomo_clock = tk.Label(pomo, text="25:00", font=("Consolas", 42, "bold"), fg=th["text_primary"], bg=th["card_bg"])
-        self.pomo_clock.pack(pady=10)
+        # 1. Left Card: Pomodoro Circular Timer
+        pomo_card = tk.Frame(cards_row, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        pomo_card.pack(side="left", fill="both", expand=True, padx=(0, 8))
 
-        pomo_btns = tk.Frame(pomo, bg=th["card_bg"])
-        pomo_btns.pack(pady=12)
-
-        self.btn_pomo = tk.Button(pomo_btns, text=self.t("btn_pomo_start"), font=("Segoe UI", 10, "bold"), bg="#f43f5e", fg="white", relief="flat", padx=14, pady=6, command=self.toggle_pomodoro)
-        self.btn_pomo.pack(side="left", padx=6)
-
-        btn_pomo_r = tk.Button(pomo_btns, text=self.t("btn_pomo_reset"), font=("Segoe UI", 10), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=10, pady=6, command=self.reset_pomodoro)
-        btn_pomo_r.pack(side="left", padx=6)
-
-        tk.Label(pomo, text=self.t("pomo_desc"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=320).pack(pady=16)
-
-        # Right: Eye Rest Card (With Toggle & Interval Selector)
-        eye = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        eye.pack(side="right", fill="both", expand=True, padx=6, pady=6)
-
-        tk.Label(eye, text=self.t("eye_title"), font=("Segoe UI", 12, "bold"), fg="#10b981", bg=th["card_bg"]).pack(pady=(20, 8))
+        tk.Label(pomo_card, text=self.t("pomo_title"), font=("Segoe UI", 12, "bold"), fg=th["ring_pomo"], bg=th["card_bg"]).pack(pady=(16, 2))
         
-        # Status Label
+        state_txt = self.t("pomo_state_work") if not self.pomodoro_is_break else self.t("pomo_state_break")
+        self.lbl_pomo_state = tk.Label(pomo_card, text=state_txt, font=("Segoe UI", 8, "bold"), fg=th["text_secondary"], bg=th["card_bg"])
+        self.lbl_pomo_state.pack(pady=(0, 6))
+
+        # Circular Canvas
+        self.canvas_pomo = tk.Canvas(pomo_card, width=200, height=200, bg=th["card_bg"], highlightthickness=0)
+        self.canvas_pomo.pack(pady=4)
+
+        # Action Buttons
+        pomo_btns = tk.Frame(pomo_card, bg=th["card_bg"])
+        pomo_btns.pack(pady=10)
+
+        self.btn_pomo = tk.Button(pomo_btns, text=self.t("btn_pomo_start"), font=("Segoe UI", 9, "bold"), bg=th["ring_pomo"], fg="white", relief="flat", padx=14, pady=6, cursor="hand2", command=self.toggle_pomodoro)
+        self.btn_pomo.pack(side="left", padx=4)
+
+        btn_pomo_r = tk.Button(pomo_btns, text=self.t("btn_pomo_reset"), font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=6, cursor="hand2", command=self.reset_pomodoro)
+        btn_pomo_r.pack(side="left", padx=4)
+
+        tk.Label(pomo_card, text=self.t("pomo_desc"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=280).pack(pady=(4, 12))
+
+        # 2. Right Card: 20-20-20 Eye Rest Circular Timer
+        eye_card = tk.Frame(cards_row, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        eye_card.pack(side="right", fill="both", expand=True, padx=(8, 0))
+
+        tk.Label(eye_card, text=self.t("eye_title"), font=("Segoe UI", 12, "bold"), fg=th["ring_eye"], bg=th["card_bg"]).pack(pady=(16, 2))
+
+        # Toggle Switch Row
         st_txt = self.t("eye_toggle_on") if self.eye_rest_enabled else self.t("eye_toggle_off")
-        st_fg = "#10b981" if self.eye_rest_enabled else "#ef4444"
-        self.lbl_eye_status = tk.Label(eye, text=st_txt, font=("Segoe UI", 9, "bold"), fg=st_fg, bg=th["card_bg"])
-        self.lbl_eye_status.pack(pady=(0, 4))
+        st_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
+        self.btn_eye_toggle = tk.Button(eye_card, text=st_txt, font=("Segoe UI", 8, "bold"), bg=st_bg, fg="white", relief="flat", padx=10, pady=2, cursor="hand2", command=self.toggle_eye_rest_enabled)
+        self.btn_eye_toggle.pack(pady=(0, 6))
 
-        self.eye_clock = tk.Label(eye, text=f"{self.eye_interval_min:02d}:00", font=("Consolas", 42, "bold"), fg=th["text_primary"] if self.eye_rest_enabled else th["text_secondary"], bg=th["card_bg"])
-        self.eye_clock.pack(pady=6)
+        # Circular Canvas
+        self.canvas_eye = tk.Canvas(eye_card, width=200, height=200, bg=th["card_bg"], highlightthickness=0)
+        self.canvas_eye.pack(pady=4)
 
-        eye_btns = tk.Frame(eye, bg=th["card_bg"])
-        eye_btns.pack(pady=10)
-
-        # ON/OFF Toggle Button
-        toggle_btn_txt = self.t("btn_eye_on") if self.eye_rest_enabled else self.t("btn_eye_off")
-        toggle_btn_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
-        self.btn_eye_toggle = tk.Button(eye_btns, text=toggle_btn_txt, font=("Segoe UI", 10, "bold"), bg=toggle_btn_bg, fg="white", relief="flat", padx=12, pady=6, command=self.toggle_eye_rest_enabled)
-        self.btn_eye_toggle.pack(side="left", padx=4)
-
-        btn_eye_r = tk.Button(eye_btns, text=self.t("btn_eye_reset"), font=("Segoe UI", 10), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=10, pady=6, command=self.reset_eye_rest)
-        btn_eye_r.pack(side="left", padx=4)
-
-        # Interval Options
-        interval_frame = tk.Frame(eye, bg=th["card_bg"])
-        interval_frame.pack(pady=6)
-        tk.Label(interval_frame, text=self.t("eye_interval_lbl"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="left", padx=4)
+        # Interval Options Row
+        int_row = tk.Frame(eye_card, bg=th["card_bg"])
+        int_row.pack(pady=4)
+        tk.Label(int_row, text=self.t("eye_interval_lbl"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="left", padx=4)
 
         for mins in [15, 20, 30, 45]:
             act = (mins == self.eye_interval_min)
             b_bg = th["accent"] if act else th["btn_bg"]
-            b_fg = "white" if act else th["text_primary"]
-            btn_int = tk.Button(interval_frame, text=f"{mins}m", font=("Segoe UI", 8, "bold" if act else "normal"), bg=b_bg, fg=b_fg, relief="flat", padx=6, pady=2, command=lambda m=mins: self.set_eye_interval(m))
-            btn_int.pack(side="left", padx=2)
+            b_fg = "white" if act else th["btn_fg"]
+            b_int = tk.Button(int_row, text=f"{mins}m", font=("Segoe UI", 8, "bold" if act else "normal"), bg=b_bg, fg=b_fg, relief="flat", padx=6, pady=2, cursor="hand2", command=lambda m=mins: self.set_eye_interval(m))
+            b_int.pack(side="left", padx=2)
 
-        tk.Label(eye, text=self.t("eye_desc"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=340).pack(pady=14)
+        btn_eye_r = tk.Button(eye_card, text=self.t("btn_eye_reset"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=4, cursor="hand2", command=self.reset_eye_rest)
+        btn_eye_r.pack(pady=4)
+
+        tk.Label(eye_card, text=self.t("eye_desc"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=280).pack(pady=(2, 12))
+
+        self.update_timer_rings()
+
+    def update_timer_rings(self):
+        if not hasattr(self, 'canvas_pomo') or not self.canvas_pomo.winfo_exists():
+            return
+
+        th = THEMES[self.current_theme]
+        
+        # 1. Draw Pomodoro Ring
+        self.canvas_pomo.delete("all")
+        p_pct = 1.0 - (self.pomodoro_seconds_left / max(1, self.pomodoro_total_sec))
+        self.draw_circular_arc(self.canvas_pomo, 200, 200, p_pct, th["ring_pomo"], th["ring_bg"])
+        
+        m_p = self.pomodoro_seconds_left // 60
+        s_p = self.pomodoro_seconds_left % 60
+        self.canvas_pomo.create_text(100, 100, text=f"{m_p:02d}:{s_p:02d}", font=("Consolas", 28, "bold"), fill=th["text_primary"])
+
+        # 2. Draw Eye Rest Ring
+        self.canvas_eye.delete("all")
+        e_pct = 1.0 - (self.eye_rest_seconds_left / max(1, self.eye_rest_total_sec))
+        ring_col = th["ring_eye"] if self.eye_rest_enabled else th["border_subtle"]
+        self.draw_circular_arc(self.canvas_eye, 200, 200, e_pct if self.eye_rest_enabled else 0.0, ring_col, th["ring_bg"])
+        
+        m_e = self.eye_rest_seconds_left // 60
+        s_e = self.eye_rest_seconds_left % 60
+        txt_col = th["text_primary"] if self.eye_rest_enabled else th["text_secondary"]
+        self.canvas_eye.create_text(100, 100, text=f"{m_e:02d}:{s_e:02d}", font=("Consolas", 28, "bold"), fill=txt_col)
+
+    def draw_circular_arc(self, canvas, w, h, progress_pct, arc_color, track_color):
+        pad = 18
+        width_ring = 12
+        # Background full circle track
+        canvas.create_oval(pad, pad, w - pad, h - pad, outline=track_color, width=width_ring)
+        # Active progress arc
+        if progress_pct > 0:
+            extent = -359.9 * min(1.0, max(0.0, progress_pct))
+            canvas.create_arc(pad, pad, w - pad, h - pad, start=90, extent=extent, outline=arc_color, width=width_ring, style="arc")
 
     def toggle_pomodoro(self):
         self.pomodoro_is_running = not self.pomodoro_is_running
         if self.pomodoro_is_running:
             self.btn_pomo.config(text=self.t("btn_pomo_pause"), bg="#d97706")
         else:
-            self.btn_pomo.config(text=self.t("btn_pomo_resume"), bg="#f43f5e")
+            self.btn_pomo.config(text=self.t("btn_pomo_resume"), bg=THEMES[self.current_theme]["ring_pomo"])
 
     def reset_pomodoro(self):
         self.pomodoro_is_running = False
+        self.pomodoro_is_break = False
+        self.pomodoro_total_sec = 25 * 60
         self.pomodoro_seconds_left = 25 * 60
-        self.btn_pomo.config(text=self.t("btn_pomo_start"), bg="#f43f5e")
-        self.pomo_clock.config(text="25:00")
+        self.btn_pomo.config(text=self.t("btn_pomo_start"), bg=THEMES[self.current_theme]["ring_pomo"])
+        self.lbl_pomo_state.config(text=self.t("pomo_state_work"))
+        self.update_timer_rings()
 
     def toggle_eye_rest_enabled(self):
         self.eye_rest_enabled = not self.eye_rest_enabled
         self.save_data()
-        th = THEMES[self.current_theme]
-        
         st_txt = self.t("eye_toggle_on") if self.eye_rest_enabled else self.t("eye_toggle_off")
-        st_fg = "#10b981" if self.eye_rest_enabled else "#ef4444"
-        self.lbl_eye_status.config(text=st_txt, fg=st_fg)
-
-        toggle_btn_txt = self.t("btn_eye_on") if self.eye_rest_enabled else self.t("btn_eye_off")
-        toggle_btn_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
-        self.btn_eye_toggle.config(text=toggle_btn_txt, bg=toggle_btn_bg)
-
-        self.eye_clock.config(fg=th["text_primary"] if self.eye_rest_enabled else th["text_secondary"])
+        st_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
+        self.btn_eye_toggle.config(text=st_txt, bg=st_bg)
+        self.update_timer_rings()
 
     def set_eye_interval(self, mins):
         self.eye_interval_min = mins
+        self.eye_rest_total_sec = mins * 60
         self.eye_rest_seconds_left = mins * 60
         self.save_data()
-        self.rebuild_full_ui()
+        self.render_content_view()
 
     def reset_eye_rest(self):
         self.eye_rest_seconds_left = self.eye_interval_min * 60
-        self.eye_clock.config(text=f"{self.eye_interval_min:02d}:00")
+        self.update_timer_rings()
 
-    def build_settings_tab(self, parent):
+    # =========================================================================
+    # VIEW 3: SETTINGS, DATA & UPDATES
+    # =========================================================================
+    def build_settings_view(self, parent):
         th = THEMES[self.current_theme]
-        container = tk.Frame(parent, bg=th["bg"])
-        container.pack(fill="both", expand=True, padx=6, pady=6)
 
         # 1. Preferences Card
-        pref_card = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        pref_card.pack(fill="x", padx=6, pady=(0, 8))
+        pref_card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        pref_card.pack(fill="x", pady=(0, 10))
 
-        tk.Label(pref_card, text=self.t("settings_heading"), font=("Segoe UI", 12, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=20, pady=(14, 8))
+        tk.Label(pref_card, text=self.t("settings_heading"), font=("Segoe UI", 11, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 6))
 
-        pref_grid = tk.Frame(pref_card, bg=th["card_bg"])
-        pref_grid.pack(fill="x", padx=20, pady=(0, 14))
+        grid_p = tk.Frame(pref_card, bg=th["card_bg"])
+        grid_p.pack(fill="x", padx=16, pady=(0, 12))
 
-        # Default Tone Selector
-        tk.Label(pref_grid, text=self.t("default_tone"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=0, column=0, sticky="w", pady=6)
-        
+        # Default Tone
+        tk.Label(grid_p, text=self.t("default_tone"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=0, column=0, sticky="w", pady=4)
         self.var_def_tone = tk.StringVar(value=self.current_tone)
-        combo_def = ttk.Combobox(pref_grid, textvariable=self.var_def_tone, values=list(TONES.keys()), state="readonly", font=("Segoe UI", 9), width=18)
-        combo_def.grid(row=0, column=1, sticky="w", padx=10, pady=6)
+        combo_def = ttk.Combobox(grid_p, textvariable=self.var_def_tone, values=list(TONES.keys()), state="readonly", font=("Segoe UI", 9), width=18)
+        combo_def.grid(row=0, column=1, sticky="w", padx=10, pady=4)
         combo_def.bind("<<ComboboxSelected>>", lambda e: self.on_change_default_tone())
 
-        btn_test_def = tk.Button(pref_grid, text="🔊 " + self.t("btn_test_tone"), font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=10, command=lambda: play_audio_tone(self.var_def_tone.get()))
-        btn_test_def.grid(row=0, column=2, sticky="w", padx=4, pady=6)
+        btn_test_def = tk.Button(grid_p, text="🔊 " + self.t("btn_test_tone"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=8, cursor="hand2", command=lambda: play_audio_tone(self.var_def_tone.get()))
+        btn_test_def.grid(row=0, column=2, sticky="w", padx=4, pady=4)
 
-        # Language Selector
-        tk.Label(pref_grid, text=self.t("app_language"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=1, column=0, sticky="w", pady=6)
-        
-        lang_box = tk.Frame(pref_grid, bg=th["card_bg"])
+        # Language
+        tk.Label(grid_p, text=self.t("app_language"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=1, column=0, sticky="w", pady=6)
+        lang_box = tk.Frame(grid_p, bg=th["card_bg"])
         lang_box.grid(row=1, column=1, sticky="w", padx=10, pady=6)
 
-        btn_l_id = tk.Button(lang_box, text="Bahasa Indonesia", font=("Segoe UI", 8, "bold" if self.current_lang == "id" else "normal"), bg=th["accent"] if self.current_lang == "id" else th["btn_bg"], fg="white" if self.current_lang == "id" else th["text_primary"], relief="flat", padx=8, pady=2, command=lambda: self.set_language("id"))
+        btn_l_id = tk.Button(lang_box, text="Bahasa Indonesia", font=("Segoe UI", 8, "bold" if self.current_lang == "id" else "normal"), bg=th["accent"] if self.current_lang == "id" else th["btn_bg"], fg="white" if self.current_lang == "id" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_language("id"))
         btn_l_id.pack(side="left", padx=(0, 4))
 
-        btn_l_en = tk.Button(lang_box, text="English", font=("Segoe UI", 8, "bold" if self.current_lang == "en" else "normal"), bg=th["accent"] if self.current_lang == "en" else th["btn_bg"], fg="white" if self.current_lang == "en" else th["text_primary"], relief="flat", padx=8, pady=2, command=lambda: self.set_language("en"))
+        btn_l_en = tk.Button(lang_box, text="English", font=("Segoe UI", 8, "bold" if self.current_lang == "en" else "normal"), bg=th["accent"] if self.current_lang == "en" else th["btn_bg"], fg="white" if self.current_lang == "en" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_language("en"))
         btn_l_en.pack(side="left")
 
-        # Theme Selector
-        tk.Label(pref_grid, text=self.t("app_theme"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=2, column=0, sticky="w", pady=6)
-        
-        thm_box = tk.Frame(pref_grid, bg=th["card_bg"])
+        # Theme
+        tk.Label(grid_p, text=self.t("app_theme"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=2, column=0, sticky="w", pady=6)
+        thm_box = tk.Frame(grid_p, bg=th["card_bg"])
         thm_box.grid(row=2, column=1, sticky="w", padx=10, pady=6)
 
-        btn_th_dark = tk.Button(thm_box, text=self.t("theme_dark"), font=("Segoe UI", 8, "bold" if self.current_theme == "dark" else "normal"), bg=th["accent"] if self.current_theme == "dark" else th["btn_bg"], fg="white" if self.current_theme == "dark" else th["text_primary"], relief="flat", padx=8, pady=2, command=lambda: self.set_theme("dark"))
+        btn_th_dark = tk.Button(thm_box, text=self.t("theme_dark"), font=("Segoe UI", 8, "bold" if self.current_theme == "dark" else "normal"), bg=th["accent"] if self.current_theme == "dark" else th["btn_bg"], fg="white" if self.current_theme == "dark" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_theme("dark"))
         btn_th_dark.pack(side="left", padx=(0, 4))
 
-        btn_th_light = tk.Button(thm_box, text=self.t("theme_light"), font=("Segoe UI", 8, "bold" if self.current_theme == "light" else "normal"), bg=th["accent"] if self.current_theme == "light" else th["btn_bg"], fg="white" if self.current_theme == "light" else th["text_primary"], relief="flat", padx=8, pady=2, command=lambda: self.set_theme("light"))
+        btn_th_light = tk.Button(thm_box, text=self.t("theme_light"), font=("Segoe UI", 8, "bold" if self.current_theme == "light" else "normal"), bg=th["accent"] if self.current_theme == "light" else th["btn_bg"], fg="white" if self.current_theme == "light" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_theme("light"))
         btn_th_light.pack(side="left")
 
         # 2. Local Storage Card
-        card = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        card.pack(fill="x", padx=6, pady=(0, 8))
+        card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        card.pack(fill="x", pady=(0, 10))
 
-        tk.Label(card, text=self.t("storage_heading"), font=("Segoe UI", 12, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=20, pady=(12, 2))
-        tk.Label(card, text=f"File: {DATA_FILE}", font=("Consolas", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=20, pady=(0, 6))
-
-        tk.Label(card, text=self.t("storage_info"), font=("Segoe UI", 9), fg=th["text_primary"], bg=th["card_bg"], justify="left").pack(anchor="w", padx=20, pady=2)
+        tk.Label(card, text=self.t("storage_heading"), font=("Segoe UI", 11, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 2))
+        tk.Label(card, text=f"File: {DATA_FILE}", font=("Consolas", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(0, 4))
+        tk.Label(card, text=self.t("storage_info"), font=("Segoe UI", 8), fg=th["text_primary"], bg=th["card_bg"], justify="left").pack(anchor="w", padx=16, pady=2)
 
         btn_box = tk.Frame(card, bg=th["card_bg"])
-        btn_box.pack(anchor="w", padx=20, pady=(8, 14))
+        btn_box.pack(anchor="w", padx=16, pady=(6, 12))
 
-        btn_open = tk.Button(btn_box, text=self.t("btn_open_folder"), font=("Segoe UI", 9, "bold"), bg=th["accent"], fg="white", relief="flat", padx=12, pady=5, command=lambda: os.system(f'explorer /select,"{DATA_FILE}"'))
-        btn_open.pack(side="left", padx=(0, 8))
+        btn_open = tk.Button(btn_box, text=self.t("btn_open_folder"), font=("Segoe UI", 8, "bold"), bg=th["accent"], fg="white", relief="flat", padx=10, pady=4, cursor="hand2", command=lambda: os.system(f'explorer /select,"{DATA_FILE}"'))
+        btn_open.pack(side="left", padx=(0, 6))
 
-        btn_save = tk.Button(btn_box, text=self.t("btn_save_json"), font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=12, pady=5, command=self.save_data_with_feedback)
-        btn_save.pack(side="left", padx=8)
+        btn_save = tk.Button(btn_box, text=self.t("btn_save_json"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=4, cursor="hand2", command=self.save_data_with_feedback)
+        btn_save.pack(side="left")
 
         # 3. Update & Version Sync Card
-        up_card = tk.Frame(container, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        up_card.pack(fill="both", expand=True, padx=6, pady=(0, 6))
+        up_card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
+        up_card.pack(fill="both", expand=True)
 
-        tk.Label(up_card, text=self.t("update_heading"), font=("Segoe UI", 12, "bold"), fg="#10b981", bg=th["card_bg"]).pack(anchor="w", padx=20, pady=(12, 2))
+        tk.Label(up_card, text=self.t("update_heading"), font=("Segoe UI", 11, "bold"), fg="#10b981", bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 2))
         
         up_meta = tk.Frame(up_card, bg=th["card_bg"])
-        up_meta.pack(fill="x", padx=20, pady=4)
+        up_meta.pack(fill="x", padx=16, pady=4)
         
-        tk.Label(up_meta, text=f"{self.t('current_ver')} v{APP_VERSION}", font=("Segoe UI", 10, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(side="left")
-        
-        self.lbl_update_status = tk.Label(up_meta, text=self.t("status_ready"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"])
-        self.lbl_update_status.pack(side="left", padx=14)
+        tk.Label(up_meta, text=f"{self.t('current_ver')} v{APP_VERSION}", font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(side="left")
+        self.lbl_update_status = tk.Label(up_meta, text=self.t("status_ready"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"])
+        self.lbl_update_status.pack(side="left", padx=12)
 
         up_btn_box = tk.Frame(up_card, bg=th["card_bg"])
-        up_btn_box.pack(anchor="w", padx=20, pady=(8, 14))
+        up_btn_box.pack(anchor="w", padx=16, pady=(6, 12))
 
-        self.btn_check_update = tk.Button(up_btn_box, text=self.t("btn_check_update"), font=("Segoe UI", 9, "bold"), bg="#059669", fg="white", activebackground="#047857", activeforeground="white", relief="flat", padx=14, pady=6, command=lambda: self.check_for_updates_async(silent=False))
-        self.btn_check_update.pack(side="left", padx=(0, 8))
+        self.btn_check_update = tk.Button(up_btn_box, text=self.t("btn_check_update"), font=("Segoe UI", 8, "bold"), bg="#059669", fg="white", activebackground="#047857", activeforeground="white", relief="flat", padx=12, pady=5, cursor="hand2", command=lambda: self.check_for_updates_async(silent=False))
+        self.btn_check_update.pack(side="left", padx=(0, 6))
 
-        btn_repo = tk.Button(up_btn_box, text=self.t("btn_open_repo"), font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=12, pady=6, command=lambda: webbrowser.open(GITHUB_REPO_URL))
-        btn_repo.pack(side="left", padx=8)
+        btn_repo = tk.Button(up_btn_box, text=self.t("btn_open_repo"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=lambda: webbrowser.open(GITHUB_REPO_URL))
+        btn_repo.pack(side="left")
 
     def on_change_default_tone(self):
         self.current_tone = self.var_def_tone.get()
@@ -764,21 +973,19 @@ class ZzzleepDesktopApp:
     def set_language(self, lang):
         self.current_lang = lang
         self.save_data()
-        self.rebuild_full_ui()
+        self.rebuild_ui()
 
     def set_theme(self, th_name):
         self.current_theme = th_name
         self.save_data()
-        self.apply_theme_styles()
-        self.rebuild_full_ui()
+        self.rebuild_ui()
 
     def save_data_with_feedback(self):
         self.save_data()
         messagebox.showinfo("ZZZleep", self.t("saved_ok"))
 
     def check_for_updates_async(self, silent=True):
-        """Asynchronously checks version.json from GitHub."""
-        if hasattr(self, 'lbl_update_status'):
+        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
             self.lbl_update_status.config(text=self.t("status_checking"), fg="#38bdf8")
 
         def _worker():
@@ -806,24 +1013,23 @@ class ZzzleepDesktopApp:
 
     def on_update_found(self, data):
         new_ver = data.get("version", "1.1.0")
-        if hasattr(self, 'lbl_update_status'):
+        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
             self.lbl_update_status.config(text=f"{self.t('status_new_avail')} (v{new_ver})", fg="#10b981")
         self.show_update_dialog(data)
 
     def on_update_up_to_date(self, remote_ver, silent):
-        if hasattr(self, 'lbl_update_status'):
+        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
             self.lbl_update_status.config(text=self.t("status_latest"), fg="#10b981")
         if not silent:
             messagebox.showinfo("Pembaruan Versi", self.t("up_to_date_msg"))
 
     def on_update_error(self, err_msg, silent):
-        if hasattr(self, 'lbl_update_status'):
+        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
             self.lbl_update_status.config(text=self.t("status_offline"), fg="#94a3b8")
         if not silent:
             messagebox.showwarning("Koneksi Pembaruan", self.t("conn_err_msg"))
 
     def show_update_dialog(self, data):
-        """Displays a modern modal popup with update details and changelog."""
         new_ver = data.get("version", "1.1.0")
         rel_date = data.get("release_date", "")
         changelog = data.get("changelog", [])
@@ -832,68 +1038,57 @@ class ZzzleepDesktopApp:
         th = THEMES[self.current_theme]
         dialog = tk.Toplevel(self.root)
         dialog.title("Pembaruan ZZZleep Tersedia" if self.current_lang == "id" else "ZZZleep Update Available")
-        dialog.geometry("540x490")
-        dialog.minsize(500, 450)
+        dialog.geometry("540x480")
+        dialog.minsize(500, 440)
         dialog.configure(bg=th["bg"])
         dialog.transient(self.root)
         dialog.grab_set()
 
-        # Center relative to root window
+        # Center dialog
         dialog.update_idletasks()
-        rx = self.root.winfo_x()
-        ry = self.root.winfo_y()
-        rw = self.root.winfo_width()
-        rh = self.root.winfo_height()
+        rx, ry = self.root.winfo_x(), self.root.winfo_y()
+        rw, rh = self.root.winfo_width(), self.root.winfo_height()
         dx = rx + (rw - 540) // 2
-        dy = ry + (rh - 490) // 2
+        dy = ry + (rh - 480) // 2
         dialog.geometry(f"+{max(0, dx)}+{max(0, dy)}")
 
-        # Header Box
         hdr = tk.Frame(dialog, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
         hdr.pack(fill="x")
 
-        tk.Label(hdr, text="🚀", font=("Segoe UI Emoji", 20), bg=th["card_bg"]).pack(side="left", padx=(20, 10), pady=16)
+        tk.Label(hdr, text="🚀", font=("Segoe UI Emoji", 20), bg=th["card_bg"]).pack(side="left", padx=(18, 8), pady=14)
         h_info = tk.Frame(hdr, bg=th["card_bg"])
-        h_info.pack(side="left", fill="y", pady=14)
+        h_info.pack(side="left", fill="y", pady=12)
 
         title_text = "Pembaruan Baru Tersedia!" if self.current_lang == "id" else "New Version Available!"
         tk.Label(h_info, text=title_text, font=("Segoe UI", 12, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w")
         sub_text = f"Versi v{new_ver} telah dirilis ({rel_date})" if self.current_lang == "id" else f"Version v{new_ver} released ({rel_date})"
-        tk.Label(h_info, text=sub_text, font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w")
+        tk.Label(h_info, text=sub_text, font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w")
 
-        # Body
         body = tk.Frame(dialog, bg=th["bg"])
-        body.pack(fill="both", expand=True, padx=20, pady=14)
+        body.pack(fill="both", expand=True, padx=18, pady=12)
 
-        # Version Comparison Badge
-        v_box = tk.Frame(body, bg=th["card_bg"], padx=14, pady=10, highlightthickness=1, highlightbackground=th["border"])
-        v_box.pack(fill="x", pady=(0, 12))
+        v_box = tk.Frame(body, bg=th["card_bg"], padx=12, pady=8, highlightthickness=1, highlightbackground=th["border"])
+        v_box.pack(fill="x", pady=(0, 10))
 
         cur_lbl = f"Versi Anda: v{APP_VERSION}" if self.current_lang == "id" else f"Your Version: v{APP_VERSION}"
         new_lbl = f"Versi Terbaru: v{new_ver}" if self.current_lang == "id" else f"Latest Version: v{new_ver}"
         tk.Label(v_box, text=cur_lbl, font=("Segoe UI", 9, "bold"), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="left")
-        tk.Label(v_box, text="  ➔  ", font=("Segoe UI", 10, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left")
+        tk.Label(v_box, text="  ➔  ", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left")
         tk.Label(v_box, text=new_lbl, font=("Segoe UI", 9, "bold"), fg="#10b981", bg=th["card_bg"]).pack(side="left")
 
-        # Changelog Header
         cl_head = "Apa saja yang baru pada versi ini:" if self.current_lang == "id" else "What's new in this update:"
-        tk.Label(body, text=cl_head, font=("Segoe UI", 10, "bold"), fg=th["text_primary"], bg=th["bg"]).pack(anchor="w", pady=(0, 6))
+        tk.Label(body, text=cl_head, font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["bg"]).pack(anchor="w", pady=(0, 4))
 
-        # Changelog List Container
-        cl_box = tk.Frame(body, bg=th["card_bg"], padx=14, pady=12, highlightthickness=1, highlightbackground=th["border"])
+        cl_box = tk.Frame(body, bg=th["card_bg"], padx=12, pady=8, highlightthickness=1, highlightbackground=th["border"])
         cl_box.pack(fill="both", expand=True)
 
-        if changelog:
-            for item in changelog:
-                row = tk.Frame(cl_box, bg=th["card_bg"])
-                row.pack(fill="x", anchor="w", pady=3)
-                tk.Label(row, text="•", font=("Segoe UI", 10, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left", anchor="n", padx=(0, 8))
-                tk.Label(row, text=item, font=("Segoe UI", 9), fg=th["text_primary"], bg=th["card_bg"], wraplength=430, justify="left").pack(side="left", fill="x", expand=True)
-        else:
-            tk.Label(cl_box, text="Peningkatan stabilitas dan fitur baru.", font=("Segoe UI", 9, "italic"), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w")
+        for item in changelog:
+            row = tk.Frame(cl_box, bg=th["card_bg"])
+            row.pack(fill="x", anchor="w", pady=2)
+            tk.Label(row, text="•", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left", anchor="n", padx=(0, 6))
+            tk.Label(row, text=item, font=("Segoe UI", 8), fg=th["text_primary"], bg=th["card_bg"], wraplength=440, justify="left").pack(side="left", fill="x", expand=True)
 
-        # Footer Actions
-        ftr = tk.Frame(dialog, bg=th["card_bg"], padx=16, pady=14, highlightthickness=1, highlightbackground=th["border"])
+        ftr = tk.Frame(dialog, bg=th["card_bg"], padx=14, pady=12, highlightthickness=1, highlightbackground=th["border"])
         ftr.pack(fill="x", side="bottom")
 
         def _do_update():
@@ -901,15 +1096,15 @@ class ZzzleepDesktopApp:
             dialog.destroy()
 
         btn_up_txt = "⬇ Unduh Pembaruan" if self.current_lang == "id" else "⬇ Download Update"
-        btn_update = tk.Button(ftr, text=btn_up_txt, font=("Segoe UI", 9, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", padx=16, pady=6, command=_do_update)
-        btn_update.pack(side="right", padx=(8, 0))
+        btn_update = tk.Button(ftr, text=btn_up_txt, font=("Segoe UI", 9, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", padx=14, pady=5, cursor="hand2", command=_do_update)
+        btn_update.pack(side="right", padx=(6, 0))
 
-        btn_gh_txt = "🌐 Lihat di GitHub" if self.current_lang == "id" else "🌐 View on GitHub"
-        btn_gh = tk.Button(ftr, text=btn_gh_txt, font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["text_primary"], relief="flat", padx=12, pady=6, command=lambda: webbrowser.open(GITHUB_REPO_URL))
-        btn_gh.pack(side="right", padx=6)
+        btn_gh_txt = "🌐 GitHub"
+        btn_gh = tk.Button(ftr, text=btn_gh_txt, font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=lambda: webbrowser.open(GITHUB_REPO_URL))
+        btn_gh.pack(side="right", padx=4)
 
         btn_can_txt = "Nanti Saja" if self.current_lang == "id" else "Later"
-        btn_cancel = tk.Button(ftr, text=btn_can_txt, font=("Segoe UI", 9), bg=th["card_bg"], fg=th["text_secondary"], relief="flat", padx=12, pady=6, command=dialog.destroy)
+        btn_cancel = tk.Button(ftr, text=btn_can_txt, font=("Segoe UI", 8), bg=th["card_bg"], fg=th["text_secondary"], relief="flat", padx=10, pady=5, cursor="hand2", command=dialog.destroy)
         btn_cancel.pack(side="left")
 
     def start_background_timer(self):
@@ -929,12 +1124,14 @@ class ZzzleepDesktopApp:
                     d_str = now.strftime("%A, %d %B %Y")
 
                 try:
-                    self.top_clock.config(text=t_str)
-                    self.clock_lbl.config(text=t_str)
-                    self.date_lbl.config(text=d_str)
+                    if hasattr(self, 'clock_lbl') and self.clock_lbl.winfo_exists():
+                        self.clock_lbl.config(text=t_str)
+                    if hasattr(self, 'date_lbl') and self.date_lbl.winfo_exists():
+                        self.date_lbl.config(text=d_str)
                 except Exception:
                     pass
 
+                # Alarm Trigger
                 if hm_str != last_min:
                     last_min = hm_str
                     day_idx = (now.weekday() + 1) % 7
@@ -950,29 +1147,39 @@ class ZzzleepDesktopApp:
                                 except Exception:
                                     pass
 
+                # Pomodoro Tick
                 if self.pomodoro_is_running and self.pomodoro_seconds_left > 0:
                     self.pomodoro_seconds_left -= 1
-                    m = self.pomodoro_seconds_left // 60
-                    s = self.pomodoro_seconds_left % 60
-                    try:
-                        self.pomo_clock.config(text=f"{m:02d}:{s:02d}")
-                    except Exception:
-                        pass
                     if self.pomodoro_seconds_left == 0:
-                        self.pomodoro_is_running = False
+                        self.pomodoro_is_break = not self.pomodoro_is_break
+                        self.pomodoro_total_sec = (5 * 60) if self.pomodoro_is_break else (25 * 60)
+                        self.pomodoro_seconds_left = self.pomodoro_total_sec
                         play_audio_tone(self.current_tone)
+                        try:
+                            st_lbl = self.t("pomo_state_break") if self.pomodoro_is_break else self.t("pomo_state_work")
+                            if hasattr(self, 'lbl_pomo_state') and self.lbl_pomo_state.winfo_exists():
+                                self.lbl_pomo_state.config(text=st_lbl)
+                        except Exception:
+                            pass
 
+                # Eye Rest Tick
                 if self.eye_rest_enabled and self.eye_rest_seconds_left > 0:
                     self.eye_rest_seconds_left -= 1
-                    m = self.eye_rest_seconds_left // 60
-                    s = self.eye_rest_seconds_left % 60
-                    try:
-                        self.eye_clock.config(text=f"{m:02d}:{s:02d}")
-                    except Exception:
-                        pass
                     if self.eye_rest_seconds_left == 0:
                         self.eye_rest_seconds_left = self.eye_interval_min * 60
                         play_audio_tone("bell")
+                        try:
+                            self.root.deiconify()
+                            self.root.lift()
+                        except Exception:
+                            pass
+
+                # Update Timer Canvas Rings if on timers tab
+                try:
+                    if self.current_nav == "timers":
+                        self.root.after(0, self.update_timer_rings)
+                except Exception:
+                    pass
 
                 time.sleep(1)
 
