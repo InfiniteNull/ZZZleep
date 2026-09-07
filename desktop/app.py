@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ZZZleep — Desktop Calendar, Audio Alarm & Rest Timer (v1.1.0)
+ZZZleep — Desktop Calendar, Audio Alarm & Focus Timer (v1.2.0)
 Author: Rizki Ananda, S.Kom (@InfiniteNull)
 License: MIT
 """
@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import math
+import random
 import calendar
 import threading
 import datetime
@@ -27,13 +28,13 @@ except ImportError:
 
 # Application Meta & Update Config
 APP_NAME = "ZZZleep"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 DATA_FILE = os.path.join(os.path.expanduser("~"), ".zzzleep_desktop_data.json")
 UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/InfiniteNull/ZZZleep/main/version.json"
 GITHUB_REPO_URL = "https://github.com/InfiniteNull/ZZZleep"
 DIRECT_EXE_URL = "https://github.com/InfiniteNull/ZZZleep/raw/main/bin/ZZZleep.exe"
 
-# Available Synthesized Sound Tones
+# Synthesized Harmonic Sound Tones (Frequencies in Hz)
 TONES = {
     "gentle": "Arpeggio C-Mayor",
     "retro": "Digital Pulse (880/1760Hz)",
@@ -42,41 +43,97 @@ TONES = {
     "zen": "Zen Minimalist (520Hz)"
 }
 
-# Day Names
-DAY_NAMES_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
-DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+# Built-in Indonesian Public Holidays & Joint Leaves (2025 - 2027)
+HOLIDAYS_DB = {
+    # 2025
+    "2025-01-01": "New Year's Day 2025",
+    "2025-01-27": "Isra Mi'raj Nabi Muhammad",
+    "2025-01-29": "Chinese New Year 2576",
+    "2025-03-29": "Hari Raya Nyepi 1947",
+    "2025-03-31": "Idul Fitri 1446 H",
+    "2025-04-01": "Idul Fitri 1446 H (Day 2)",
+    "2025-04-18": "Good Friday",
+    "2025-05-01": "International Labor Day",
+    "2025-05-12": "Hari Raya Waisak 2569",
+    "2025-05-29": "Ascension of Jesus Christ",
+    "2025-06-01": "Pancasila Day",
+    "2025-06-06": "Idul Adha 1446 H",
+    "2025-06-27": "Islamic New Year 1447 H",
+    "2025-08-17": "Indonesian Independence Day",
+    "2025-09-05": "Maulid Nabi Muhammad SAW",
+    "2025-12-25": "Christmas Day",
+    # 2026
+    "2026-01-01": "New Year's Day 2026",
+    "2026-01-16": "Isra Mi'raj Nabi Muhammad",
+    "2026-02-17": "Chinese New Year 2577",
+    "2026-03-19": "Hari Raya Nyepi 1948",
+    "2026-03-20": "Idul Fitri 1447 H",
+    "2026-03-21": "Idul Fitri 1447 H (Day 2)",
+    "2026-04-03": "Good Friday",
+    "2026-05-01": "International Labor Day",
+    "2026-05-14": "Ascension of Jesus Christ",
+    "2026-05-27": "Idul Adha 1447 H",
+    "2026-05-31": "Hari Raya Waisak 2570",
+    "2026-06-01": "Pancasila Day",
+    "2026-06-16": "Islamic New Year 1448 H",
+    "2026-08-17": "Indonesian Independence Day (81st)",
+    "2026-08-25": "Maulid Nabi Muhammad SAW",
+    "2026-12-25": "Christmas Day",
+    # 2027
+    "2027-01-01": "New Year's Day 2027",
+    "2027-01-05": "Isra Mi'raj Nabi Muhammad",
+    "2027-02-06": "Chinese New Year 2578",
+    "2027-03-09": "Idul Fitri 1448 H",
+    "2027-03-10": "Idul Fitri 1448 H (Day 2)",
+    "2027-03-26": "Good Friday",
+    "2027-05-01": "International Labor Day",
+    "2027-05-06": "Ascension of Jesus Christ",
+    "2027-05-17": "Idul Adha 1448 H",
+    "2027-05-20": "Hari Raya Waisak 2571",
+    "2027-06-01": "Pancasila Day",
+    "2027-06-06": "Islamic New Year 1449 H",
+    "2027-08-15": "Maulid Nabi Muhammad SAW",
+    "2027-08-17": "Indonesian Independence Day",
+    "2027-12-25": "Christmas Day"
+}
 
 # Theme Color Definitions
 THEMES = {
     "dark": {
-        "bg": "#0b0f19",
+        "bg": "#090d16",
         "sidebar_bg": "#0f172a",
-        "card_bg": "#1e293b",
-        "subcard_bg": "#111827",
-        "ring_bg": "#334155",
+        "card_bg": "#131c2e",
+        "subcard_bg": "#0b1220",
+        "ring_bg": "#1e293b",
         "text_primary": "#f8fafc",
         "text_secondary": "#94a3b8",
-        "accent": "#0284c7",
-        "accent_hover": "#0369a1",
+        "accent": "#0ea5e9",
+        "accent_hover": "#0284c7",
         "accent_cyan": "#38bdf8",
         "border": "#1e293b",
         "border_subtle": "#334155",
-        "btn_bg": "#334155",
+        "btn_bg": "#1e293b",
         "btn_fg": "#f8fafc",
-        "entry_bg": "#0f172a",
+        "entry_bg": "#0b1220",
         "entry_fg": "#38bdf8",
-        "nav_active_bg": "#0284c7",
+        "nav_active_bg": "#0ea5e9",
         "nav_active_fg": "#ffffff",
         "nav_inactive_bg": "#0f172a",
         "nav_inactive_fg": "#94a3b8",
         "ring_pomo": "#f43f5e",
-        "ring_eye": "#10b981"
+        "ring_eye": "#10b981",
+        "holiday_bg": "#450a0a",
+        "holiday_fg": "#f87171",
+        "today_bg": "#0369a1",
+        "today_fg": "#ffffff"
     },
     "light": {
-        "bg": "#f1f5f9",
+        "bg": "#f8fafc",
         "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
-        "subcard_bg": "#f8fafc",
+        "subcard_bg": "#f1f5f9",
         "ring_bg": "#e2e8f0",
         "text_primary": "#0f172a",
         "text_secondary": "#64748b",
@@ -85,7 +142,7 @@ THEMES = {
         "accent_cyan": "#0284c7",
         "border": "#e2e8f0",
         "border_subtle": "#cbd5e1",
-        "btn_bg": "#e2e8f0",
+        "btn_bg": "#f1f5f9",
         "btn_fg": "#1e293b",
         "entry_bg": "#f8fafc",
         "entry_fg": "#0284c7",
@@ -94,1102 +151,1317 @@ THEMES = {
         "nav_inactive_bg": "#ffffff",
         "nav_inactive_fg": "#64748b",
         "ring_pomo": "#e11d48",
-        "ring_eye": "#059669"
-    }
-}
-
-# Bilingual Translations Dictionary
-I18N = {
-    "id": {
-        "app_title": "ZZZleep — Desktop Calendar & Audio Alarm",
-        "brand": "⏰ ZZZleep",
-        "nav_alarms": "⏰  Alarm & Jadwal",
-        "nav_timers": "🍅  Timer & Layar",
-        "nav_settings": "⚙️  Pengaturan & Data",
-        "nav_hub": "🌐  Hub Portofolio",
-        "local_time": "WAKTU LOKAL",
-        "monthly_calendar": "KALENDER BULANAN",
-        "new_alarm": "Tambah Alarm Baru",
-        "time_picker": "Waktu Alarm (Jam : Menit):",
-        "quick_presets": "Waktu Cepat:",
-        "title_label": "Keterangan / Label:",
-        "tone_label": "Nada Dering:",
-        "repeat_days": "Ulangi Hari:",
-        "btn_add_alarm": "+ Pasang Alarm",
-        "btn_test_tone": "🔊 Uji Suara",
-        "active_alarms": "Daftar Alarm Aktif",
-        "no_alarms": "Belum ada alarm. Buat alarm baru di sebelah kiri.",
-        "btn_active": "AKTIF",
-        "btn_inactive": "NONAKTIF",
-        "pomo_title": "POMODORO FOCUS TIMER",
-        "pomo_state_work": "SESI FOKUS KERJA",
-        "pomo_state_break": "SESI ISTIRAHAT",
-        "btn_pomo_start": "▶ Mulai Sesi",
-        "btn_pomo_pause": "⏸ Jeda",
-        "btn_pomo_resume": "▶ Lanjut",
-        "btn_pomo_reset": "↺ Reset",
-        "pomo_desc": "25 menit fokus kerja diselingi 5 menit istirahat untuk menjaga kesegaran berpikir.",
-        "eye_title": "PENGINGAT MATA 20-20-20",
-        "eye_toggle_on": "🟢 Pengingat Aktif",
-        "eye_toggle_off": "🔴 Pengingat Nonaktif",
-        "eye_interval_lbl": "Interval:",
-        "btn_eye_reset": "↺ Reset",
-        "eye_desc": "Tiap 20 menit menatap layar, pandang objek sejauh 6 meter selama 20 detik guna mencegah mata lelah.",
-        "settings_heading": "⚙️ PREFERENSI SUARA & TAMPILAN",
-        "default_tone": "Nada Alarm Utama:",
-        "app_language": "Bahasa Antarmuka:",
-        "app_theme": "Tema Tampilan:",
-        "theme_dark": "🌙 Mode Gelap (Dark)",
-        "theme_light": "☀️ Mode Terang (Light)",
-        "storage_heading": "📁 PENYIMPANAN DATA LOKAL (JSON)",
-        "storage_info": (
-            "1. Seluruh jadwal dan preferensi tersimpan secara lokal dalam format JSON.\n"
-            "2. Nada alarm disintesis mandiri tanpa dependensi file eksternal.\n"
-            "3. Berkas data dapat dicadangkan atau dipindahkan secara manual kapan saja."
-        ),
-        "btn_open_folder": "Buka Folder Data",
-        "btn_save_json": "Simpan JSON Sekarang",
-        "update_heading": "🔄 SINKRONISASI & PEMBARUAN VERSI",
-        "current_ver": "Versi Saat Ini:",
-        "btn_check_update": "🔄 Periksa Pembaruan",
-        "btn_open_repo": "🌐 Buka GitHub Repository",
-        "status_ready": "● Siap memeriksa pembaruan",
-        "status_checking": "⏳ Memeriksa ke GitHub...",
-        "status_latest": "✓ Versi sudah paling mutakhir (v1.1.0)",
-        "status_new_avail": "✨ Versi baru tersedia!",
-        "status_offline": "● Mode offline / server tidak terjangkau",
-        "format_err": "Masukkan jam (00-23) dan menit (00-59) yang valid.",
-        "saved_ok": "Pengaturan berhasil disimpan ke berkas lokal.",
-        "up_to_date_msg": "Aplikasi ZZZleep sudah berada pada versi paling mutakhir (v1.1.0).",
-        "conn_err_msg": "Tidak dapat menghubungi server GitHub. Periksa koneksi internet Anda."
-    },
-    "en": {
-        "app_title": "ZZZleep — Desktop Calendar & Audio Alarm",
-        "brand": "⏰ ZZZleep",
-        "nav_alarms": "⏰  Alarms & Schedule",
-        "nav_timers": "🍅  Focus & Screen Rest",
-        "nav_settings": "⚙️  Settings & Data",
-        "nav_hub": "🌐  Portfolio Hub",
-        "local_time": "LOCAL TIME",
-        "monthly_calendar": "MONTHLY CALENDAR",
-        "new_alarm": "Add New Alarm",
-        "time_picker": "Alarm Time (Hour : Minute):",
-        "quick_presets": "Quick Times:",
-        "title_label": "Label / Description:",
-        "tone_label": "Sound Tone:",
-        "repeat_days": "Repeat Days:",
-        "btn_add_alarm": "+ Set Alarm",
-        "btn_test_tone": "🔊 Test Tone",
-        "active_alarms": "Active Alarms List",
-        "no_alarms": "No active alarms yet. Create one on the left.",
-        "btn_active": "ACTIVE",
-        "btn_inactive": "INACTIVE",
-        "pomo_title": "POMODORO FOCUS TIMER",
-        "pomo_state_work": "FOCUS WORK SESSION",
-        "pomo_state_break": "REST BREAK SESSION",
-        "btn_pomo_start": "▶ Start Session",
-        "btn_pomo_pause": "⏸ Pause",
-        "btn_pomo_resume": "▶ Resume",
-        "btn_pomo_reset": "↺ Reset",
-        "pomo_desc": "25-minute focused work cycles followed by 5-minute breaks to maintain productivity.",
-        "eye_title": "20-20-20 SCREEN REST",
-        "eye_toggle_on": "🟢 Reminder Active",
-        "eye_toggle_off": "🔴 Reminder Disabled",
-        "eye_interval_lbl": "Interval:",
-        "btn_eye_reset": "↺ Reset",
-        "eye_desc": "Every 20 minutes looking at screens, look at an object 20 feet away for 20 seconds.",
-        "settings_heading": "⚙️ AUDIO & THEME PREFERENCES",
-        "default_tone": "Default Alarm Tone:",
-        "app_language": "Interface Language:",
-        "app_theme": "UI Theme:",
-        "theme_dark": "🌙 Dark Mode",
-        "theme_light": "☀️ Light Mode",
-        "storage_heading": "📁 LOCAL DATA STORAGE (JSON)",
-        "storage_info": (
-            "1. All schedules & preferences are stored locally in JSON format.\n"
-            "2. Alarms are synthesized without external audio file dependencies.\n"
-            "3. Data files can be backed up or transferred manually anytime."
-        ),
-        "btn_open_folder": "Open Data Folder",
-        "btn_save_json": "Save JSON Now",
-        "update_heading": "🔄 VERSION SYNC & UPDATES",
-        "current_ver": "Current Version:",
-        "btn_check_update": "🔄 Check for Updates",
-        "btn_open_repo": "🌐 Open GitHub Repository",
-        "status_ready": "● Ready to check updates",
-        "status_checking": "⏳ Checking GitHub...",
-        "status_latest": "✓ App is up to date (v1.1.0)",
-        "status_new_avail": "✨ New version available!",
-        "status_offline": "● Offline mode / server unreachable",
-        "format_err": "Please enter valid hours (00-23) and minutes (00-59).",
-        "saved_ok": "Preferences saved to local file successfully.",
-        "up_to_date_msg": "ZZZleep is already at the latest version (v1.1.0).",
-        "conn_err_msg": "Unable to connect to GitHub. Please check your internet connection."
-    }
-}
-
-DEFAULT_DATA = {
-    "alarms": [
-        {"id": "alarm-1", "title": "Bangun Pagi & Stretching", "time": "06:00", "enabled": True, "days": [1, 2, 3, 4, 5], "tone": "gentle"},
-        {"id": "alarm-2", "title": "Istirahat Siang & Makan", "time": "12:00", "enabled": True, "days": [1, 2, 3, 4, 5], "tone": "retro"},
-        {"id": "alarm-3", "title": "Tutup Laptop & Istirahat", "time": "22:30", "enabled": True, "days": [0, 1, 2, 3, 4, 5, 6], "tone": "bell"}
-    ],
-    "settings": {
-        "soundTone": "gentle",
-        "eyeRestEnabled": True,
-        "eyeRestIntervalMin": 20,
-        "language": "id",
-        "theme": "dark"
+        "ring_eye": "#059669",
+        "holiday_bg": "#fee2e2",
+        "holiday_fg": "#dc2626",
+        "today_bg": "#0284c7",
+        "today_fg": "#ffffff"
     }
 }
 
 
-def parse_version(v_str):
-    try:
-        clean = str(v_str).strip().lstrip('v')
-        return tuple(int(x) for x in clean.split('.'))
-    except Exception:
-        return (0, 0, 0)
-
-
-def play_audio_tone(tone_type="gentle"):
-    """Synthesizes rich harmonic beeps using native winsound."""
-    if not HAS_WINSOUND:
-        return
-
-    def _beep_worker():
-        try:
-            if tone_type == "gentle":
-                # Arpeggio C-Mayor: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
-                notes = [523, 659, 784, 1046]
-                for freq in notes:
-                    winsound.Beep(freq, 180)
-                    time.sleep(0.03)
-            elif tone_type == "retro":
-                for _ in range(2):
-                    winsound.Beep(880, 120)
-                    time.sleep(0.04)
-                    winsound.Beep(1760, 160)
-                    time.sleep(0.06)
-            elif tone_type == "bell":
-                winsound.Beep(440, 200)
-                time.sleep(0.03)
-                winsound.Beep(880, 350)
-                time.sleep(0.03)
-                winsound.Beep(1320, 200)
-            elif tone_type == "chime":
-                notes = [587, 659, 698, 784, 880]
-                for freq in notes:
-                    winsound.Beep(freq, 130)
-                    time.sleep(0.02)
-            elif tone_type == "zen":
-                winsound.Beep(520, 220)
-                time.sleep(0.05)
-                winsound.Beep(520, 220)
-                time.sleep(0.05)
-                winsound.Beep(650, 400)
-            else:
-                winsound.Beep(600, 300)
-        except Exception:
-            pass
-
-    t = threading.Thread(target=_beep_worker, daemon=True)
-    t.start()
-
-
-class ZzzleepDesktopApp:
+class ZZZleepApp:
     def __init__(self, root):
         self.root = root
-        self.data = self.load_data()
+        self.root.title(f"{APP_NAME} — Desktop Calendar, Alarm & Focus Timer")
+        self.root.geometry("1040x650")
+        self.root.minsize(860, 560)
 
         # State Variables
-        settings = self.data.get("settings", {})
-        self.current_lang = settings.get("language", "id")
-        self.current_theme = settings.get("theme", "dark")
-        self.current_tone = settings.get("soundTone", "gentle")
-        self.eye_rest_enabled = settings.get("eyeRestEnabled", True)
-        self.eye_interval_min = settings.get("eyeRestIntervalMin", 20)
+        self.is_mini = False
+        self.normal_geom = "1040x650"
+        self.current_tab = "alarms"  # "alarms" or "timers"
+        self.cal_year = datetime.date.today().year
+        self.cal_month = datetime.date.today().month
+        self.selected_date = datetime.date.today().strftime("%Y-%m-%d")
 
-        self.current_nav = "alarms"  # "alarms", "timers", "settings"
-        self.selected_form_days = [0, 1, 2, 3, 4, 5, 6]
+        # Load Local Data
+        self.load_data()
+        self.theme_name = self.data.get("theme", "dark")
+        self.colors = THEMES.get(self.theme_name, THEMES["dark"])
 
-        self.pomodoro_total_sec = 25 * 60
-        self.pomodoro_seconds_left = 25 * 60
-        self.pomodoro_is_running = False
-        self.pomodoro_is_break = False
+        # Pomodoro Engine State
+        self.pomo_state = "stopped"  # "running", "paused", "stopped"
+        self.pomo_mode = "work"      # "work" (25m) or "break" (5m)
+        self.pomo_total_seconds = 25 * 60
+        self.pomo_time_left = self.pomo_total_seconds
+        self.pomo_last_tick = 0
 
-        self.eye_rest_total_sec = self.eye_interval_min * 60
-        self.eye_rest_seconds_left = self.eye_interval_min * 60
+        # Eye Rest 20-20-20 State
+        self.eye_enabled = self.data.get("eye_enabled", True)
+        self.eye_interval_min = self.data.get("eye_interval", 20)
+        self.eye_time_left = self.eye_interval_min * 60
 
-        # UI Setup
-        self.root.title(f"{APP_NAME} v{APP_VERSION}")
-        self.root.geometry("980x680")
-        self.root.minsize(920, 620)
+        # Math Challenge Dialog State
+        self.active_math_dialog = None
+        self.math_alarm_beeping = False
 
-        self.build_main_shell()
-        self.start_background_timer()
+        # Build UI
+        self.setup_styles()
+        self.build_gui()
 
-        # Check for updates in background 2s after launch
-        self.root.after(2000, lambda: self.check_for_updates_async(silent=True))
+        # Background Daemons
+        self.start_clock_thread()
+        self.start_alarm_checker()
+        self.start_eye_rest_checker()
+        self.start_pomo_thread()
 
-    def t(self, key):
-        return I18N.get(self.current_lang, I18N["id"]).get(key, key)
+        # Background update check (runs quietly)
+        threading.Thread(target=self.silent_check_update, daemon=True).start()
 
+    # ==========================================
+    # DATA PERSISTENCE & HELPERS
+    # ==========================================
     def load_data(self):
+        default_data = {
+            "alarms": [
+                {
+                    "id": 1,
+                    "time": "07:30",
+                    "label": "Morning Standup",
+                    "tone": "gentle",
+                    "repeat": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+                    "enabled": True,
+                    "skip_holiday": True,
+                    "math_challenge": False
+                }
+            ],
+            "memos": {},
+            "pomo_stats": {},
+            "theme": "dark",
+            "eye_enabled": True,
+            "eye_interval": 20,
+            "default_tone": "gentle"
+        }
+
         if os.path.exists(DATA_FILE):
             try:
                 with open(DATA_FILE, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    if "settings" not in d:
-                        d["settings"] = DEFAULT_DATA["settings"].copy()
-                    return d
+                    self.data = json.load(f)
+                    for k, v in default_data.items():
+                        if k not in self.data:
+                            self.data[k] = v
             except Exception:
-                return DEFAULT_DATA.copy()
-        return DEFAULT_DATA.copy()
+                self.data = default_data
+        else:
+            self.data = default_data
+            self.save_data()
 
     def save_data(self):
         try:
-            self.data["settings"]["language"] = self.current_lang
-            self.data["settings"]["theme"] = self.current_theme
-            self.data["settings"]["soundTone"] = self.current_tone
-            self.data["settings"]["eyeRestEnabled"] = self.eye_rest_enabled
-            self.data["settings"]["eyeRestIntervalMin"] = self.eye_interval_min
-
             with open(DATA_FILE, "w", encoding="utf-8") as f:
                 json.dump(self.data, f, indent=2)
         except Exception as e:
-            print(f"Failed to save data: {e}")
+            print("Error saving data:", e)
 
-    def switch_nav(self, nav_key):
-        self.current_nav = nav_key
-        self.render_content_view()
-        self.update_sidebar_buttons()
+    def setup_styles(self):
+        self.colors = THEMES.get(self.theme_name, THEMES["dark"])
+        self.root.configure(bg=self.colors["bg"])
 
-    def toggle_language(self):
-        self.current_lang = "en" if self.current_lang == "id" else "id"
-        self.save_data()
-        self.rebuild_ui()
+        style = ttk.Style()
+        style.theme_use("clam")
+
+        style.configure("TCombobox",
+                        fieldbackground=self.colors["entry_bg"],
+                        background=self.colors["btn_bg"],
+                        foreground=self.colors["text_primary"],
+                        arrowcolor=self.colors["accent_cyan"],
+                        bordercolor=self.colors["border"])
+
+        style.map("TCombobox",
+                  fieldbackground=[("readonly", self.colors["entry_bg"])],
+                  foreground=[("readonly", self.colors["text_primary"])])
 
     def toggle_theme(self):
-        self.current_theme = "light" if self.current_theme == "dark" else "dark"
+        self.theme_name = "light" if self.theme_name == "dark" else "dark"
+        self.data["theme"] = self.theme_name
         self.save_data()
-        self.rebuild_ui()
+        self.setup_styles()
+        self.refresh_ui()
 
-    def rebuild_ui(self):
-        for w in self.root.winfo_children():
-            w.destroy()
-        self.build_main_shell()
+    # ==========================================
+    # SOUND SYNTHESIS ENGINE
+    # ==========================================
+    def play_tone(self, tone_name="gentle"):
+        def _play():
+            if not HAS_WINSOUND:
+                return
+            try:
+                if tone_name == "gentle":
+                    # Arpeggio C-Mayor (C5, E5, G5, C6)
+                    for freq, dur in [(523, 140), (659, 140), (784, 140), (1046, 320)]:
+                        winsound.Beep(freq, dur)
+                        time.sleep(0.04)
+                elif tone_name == "retro":
+                    # Fast pulse double-beep (880Hz / 1760Hz)
+                    winsound.Beep(880, 80)
+                    winsound.Beep(1760, 160)
+                    time.sleep(0.06)
+                    winsound.Beep(1760, 200)
+                elif tone_name == "bell":
+                    # Bell chime (A4 440Hz -> E5 659Hz)
+                    winsound.Beep(440, 220)
+                    winsound.Beep(659, 360)
+                elif tone_name == "chime":
+                    # Ascending notes (D5, F#5, A5)
+                    for freq, dur in [(587, 120), (740, 120), (880, 260)]:
+                        winsound.Beep(freq, dur)
+                        time.sleep(0.03)
+                elif tone_name == "zen":
+                    # Deep minimal pulse
+                    winsound.Beep(520, 480)
+                else:
+                    winsound.Beep(523, 300)
+            except Exception as e:
+                print("Sound error:", e)
 
-    def build_main_shell(self):
-        th = THEMES[self.current_theme]
-        self.root.configure(bg=th["bg"])
+        threading.Thread(target=_play, daemon=True).start()
 
-        # Main horizontal container
-        self.shell_frame = tk.Frame(self.root, bg=th["bg"])
-        self.shell_frame.pack(fill="both", expand=True)
+    # ==========================================
+    # HOLIDAY & CALENDAR UTILITIES
+    # ==========================================
+    def is_holiday(self, date_obj):
+        """Returns (is_holiday_bool, holiday_name_str)"""
+        date_str = date_obj.strftime("%Y-%m-%d")
+        if date_str in HOLIDAYS_DB:
+            return True, HOLIDAYS_DB[date_str]
+        # Sundays are standard rest days
+        if date_obj.weekday() == 6:
+            return True, "Sunday Rest Day"
+        return False, ""
 
-        # 1. Left Sidebar
-        self.sidebar = tk.Frame(self.shell_frame, bg=th["sidebar_bg"], width=230, highlightthickness=1, highlightbackground=th["border"])
-        self.sidebar.pack(side="left", fill="y")
-        self.sidebar.pack_propagate(False)
+    def get_upcoming_holiday(self):
+        """Find the earliest upcoming public holiday from today"""
+        today = datetime.date.today()
+        upcoming = []
+        for d_str, name in HOLIDAYS_DB.items():
+            try:
+                d_obj = datetime.datetime.strptime(d_str, "%Y-%m-%d").date()
+                if d_obj >= today:
+                    days_diff = (d_obj - today).days
+                    upcoming.append((days_diff, d_obj, name))
+            except ValueError:
+                continue
+        upcoming.sort(key=lambda x: x[0])
+        if upcoming:
+            return upcoming[0]
+        return None
 
-        # Sidebar Header (Brand)
-        brand_frame = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
-        brand_frame.pack(fill="x", padx=16, pady=(18, 20))
+    def get_month_long_weekends(self, year, month):
+        """Detect any 3+ consecutive rest days in the given month"""
+        num_days = calendar.monthrange(year, month)[1]
+        rest_days = set()
+        for day in range(1, num_days + 1):
+            d_obj = datetime.date(year, month, day)
+            is_hol, _ = self.is_holiday(d_obj)
+            if is_hol or d_obj.weekday() in (5, 6):  # Saturday or Sunday or Holiday
+                rest_days.add(day)
 
-        tk.Label(brand_frame, text=self.t("brand"), font=("Segoe UI", 15, "bold"), fg=th["accent_cyan"], bg=th["sidebar_bg"]).pack(side="left")
-        tk.Label(brand_frame, text=f"v{APP_VERSION}", font=("Consolas", 8, "bold"), fg=th["text_secondary"], bg=th["subcard_bg"], padx=6, pady=2).pack(side="left", padx=8)
-
-        # Navigation Menu Buttons
-        self.nav_btns = {}
-        nav_items = [
-            ("alarms", self.t("nav_alarms")),
-            ("timers", self.t("nav_timers")),
-            ("settings", self.t("nav_settings")),
-        ]
-
-        menu_box = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
-        menu_box.pack(fill="x", padx=10, pady=4)
-
-        for key, label in nav_items:
-            btn = tk.Button(
-                menu_box,
-                text=label,
-                font=("Segoe UI", 10, "bold"),
-                anchor="w",
-                relief="flat",
-                padx=14,
-                pady=10,
-                cursor="hand2",
-                command=lambda k=key: self.switch_nav(k)
-            )
-            btn.pack(fill="x", pady=3)
-            self.nav_btns[key] = btn
-
-        # Sidebar Bottom Controls (Language, Theme, Hub)
-        bot_box = tk.Frame(self.sidebar, bg=th["sidebar_bg"])
-        bot_box.pack(side="bottom", fill="x", padx=14, pady=16)
-
-        # Quick Theme & Lang Row
-        toggle_row = tk.Frame(bot_box, bg=th["sidebar_bg"])
-        toggle_row.pack(fill="x", pady=(0, 10))
-
-        lang_label = "🌐 ID" if self.current_lang == "id" else "🌐 EN"
-        btn_lang = tk.Button(toggle_row, text=lang_label, font=("Segoe UI", 8, "bold"), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=self.toggle_language)
-        btn_lang.pack(side="left", expand=True, fill="x", padx=(0, 4))
-
-        theme_label = "🌙 Dark" if self.current_theme == "dark" else "☀️ Light"
-        btn_theme = tk.Button(toggle_row, text=theme_label, font=("Segoe UI", 8, "bold"), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=self.toggle_theme)
-        btn_theme.pack(side="right", expand=True, fill="x", padx=(4, 0))
-
-        # Hub Link
-        btn_hub = tk.Button(bot_box, text=self.t("nav_hub") + " ↗", font=("Segoe UI", 8), bg=th["sidebar_bg"], fg=th["text_secondary"], activeforeground=th["accent_cyan"], relief="flat", cursor="hand2", command=lambda: webbrowser.open("https://infinitenull.github.io/"))
-        btn_hub.pack(fill="x")
-
-        # 2. Right Content Area
-        self.content_area = tk.Frame(self.shell_frame, bg=th["bg"])
-        self.content_area.pack(side="right", fill="both", expand=True, padx=16, pady=16)
-
-        self.update_sidebar_buttons()
-        self.render_content_view()
-
-    def update_sidebar_buttons(self):
-        th = THEMES[self.current_theme]
-        for key, btn in self.nav_btns.items():
-            if key == self.current_nav:
-                btn.config(bg=th["nav_active_bg"], fg=th["nav_active_fg"], activebackground=th["accent_hover"], activeforeground="white")
+        # Find consecutive streaks of 3 or more
+        long_weekends = []
+        streak = []
+        for day in range(1, num_days + 1):
+            if day in rest_days:
+                streak.append(day)
             else:
-                btn.config(bg=th["nav_inactive_bg"], fg=th["nav_inactive_fg"], activebackground=th["btn_bg"], activeforeground=th["text_primary"])
+                if len(streak) >= 3:
+                    long_weekends.append((streak[0], streak[-1], len(streak)))
+                streak = []
+        if len(streak) >= 3:
+            long_weekends.append((streak[0], streak[-1], len(streak)))
+        return long_weekends
 
-    def render_content_view(self):
-        for w in self.content_area.winfo_children():
-            w.destroy()
+    # ==========================================
+    # GUI LAYOUT & COMPONENT BUILDERS
+    # ==========================================
+    def build_gui(self):
+        # Clear root
+        for child in self.root.winfo_children():
+            child.destroy()
 
-        if self.current_nav == "alarms":
-            self.build_alarms_view(self.content_area)
-        elif self.current_nav == "timers":
-            self.build_timers_view(self.content_area)
-        elif self.current_nav == "settings":
-            self.build_settings_view(self.content_area)
+        self.root.configure(bg=self.colors["bg"])
 
-    # =========================================================================
-    # VIEW 1: ALARMS & MONTHLY CALENDAR
-    # =========================================================================
-    def build_alarms_view(self, parent):
-        th = THEMES[self.current_theme]
+        # Main Outer Container
+        self.main_container = tk.Frame(self.root, bg=self.colors["bg"])
+        self.main_container.pack(fill=tk.BOTH, expand=True)
 
-        # Top Bar: Big Local Clock & Active Alarms Status
-        top_bar = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        top_bar.pack(fill="x", pady=(0, 12))
+        # Top Header Bar
+        self.build_header(self.main_container)
 
-        # Left Top: Digital Clock & Date
-        clock_box = tk.Frame(top_bar, bg=th["card_bg"])
-        clock_box.pack(side="left", padx=16, pady=10)
+        # Content Area with Sidebar
+        body_frame = tk.Frame(self.main_container, bg=self.colors["bg"])
+        body_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.clock_lbl = tk.Label(clock_box, text="00:00:00", font=("Consolas", 22, "bold"), fg=th["accent_cyan"], bg=th["card_bg"])
-        self.clock_lbl.pack(anchor="w")
-        self.date_lbl = tk.Label(clock_box, text="Loading date...", font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"])
-        self.date_lbl.pack(anchor="w")
+        # Left Sidebar Navigation
+        self.build_sidebar(body_frame)
 
-        # Right Top: Alarm Status Pill
-        active_count = len([a for a in self.data.get("alarms", []) if a.get("enabled", True)])
-        pill_txt = f"🔔 {active_count} Alarm Aktif" if self.current_lang == "id" else f"🔔 {active_count} Alarms Active"
-        tk.Label(top_bar, text=pill_txt, font=("Segoe UI", 9, "bold"), fg="#10b981", bg=th["subcard_bg"], padx=12, pady=6).pack(side="right", padx=16)
+        # Main Dynamic View Container
+        self.content_area = tk.Frame(body_frame, bg=self.colors["bg"], padx=14, pady=10)
+        self.content_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Dual Column Layout
-        cols = tk.Frame(parent, bg=th["bg"])
-        cols.pack(fill="both", expand=True)
+        # Render Active Tab
+        self.render_active_tab()
 
-        # Left Column: Add Alarm Form (Width ~340px)
-        left_col = tk.Frame(cols, bg=th["card_bg"], width=350, highlightthickness=1, highlightbackground=th["border"])
-        left_col.pack(side="left", fill="both", padx=(0, 10))
-        left_col.pack_propagate(False)
+    def build_header(self, parent):
+        header = tk.Frame(parent, bg=self.colors["sidebar_bg"], height=52,
+                          highlightthickness=1, highlightbackground=self.colors["border"])
+        header.pack(side=tk.TOP, fill=tk.X)
+        header.pack_propagate(False)
 
-        tk.Label(left_col, text=self.t("new_alarm"), font=("Segoe UI", 11, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(14, 6))
+        # Left: Brand & Live Clock
+        left_box = tk.Frame(header, bg=self.colors["sidebar_bg"])
+        left_box.pack(side=tk.LEFT, padx=16, pady=8)
 
-        # --- Dual Spinbox Time Picker (NO ACCIDENTAL DELETING COLON) ---
-        tk.Label(left_col, text=self.t("time_picker"), font=("Segoe UI", 9, "bold"), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(4, 4))
-        
-        picker_box = tk.Frame(left_col, bg=th["card_bg"])
-        picker_box.pack(anchor="w", padx=16, pady=(0, 6))
+        brand_lbl = tk.Label(left_box, text=f"⏰ {APP_NAME}", font=("Segoe UI", 12, "bold"),
+                             fg=self.colors["accent_cyan"], bg=self.colors["sidebar_bg"])
+        brand_lbl.pack(side=tk.LEFT, padx=(0, 14))
 
-        # Hour Spinbox
-        self.spin_hour = tk.Spinbox(picker_box, from_=0, to=23, format="%02.0f", width=3, font=("Consolas", 16, "bold"), justify="center", bg=th["entry_bg"], fg=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
+        self.clock_lbl = tk.Label(left_box, text="--:--:--", font=("Segoe UI", 11, "bold"),
+                                  fg=self.colors["text_primary"], bg=self.colors["sidebar_bg"])
+        self.clock_lbl.pack(side=tk.LEFT, padx=(0, 10))
+
+        self.date_lbl = tk.Label(left_box, text="---, -- --- ----", font=("Segoe UI", 9),
+                                 fg=self.colors["text_secondary"], bg=self.colors["sidebar_bg"])
+        self.date_lbl.pack(side=tk.LEFT)
+
+        # Right: Quick Action Buttons (Mini Widget, Theme Toggle)
+        right_box = tk.Frame(header, bg=self.colors["sidebar_bg"])
+        right_box.pack(side=tk.RIGHT, padx=14, pady=8)
+
+        # Mini Widget Button
+        widget_btn = tk.Button(right_box, text="📌 Mini Widget", font=("Segoe UI", 9, "bold"),
+                               bg=self.colors["btn_bg"], fg=self.colors["accent_cyan"],
+                               activebackground=self.colors["accent"], activeforeground="#ffffff",
+                               relief=tk.FLAT, bd=0, padx=10, pady=3, cursor="hand2",
+                               command=self.toggle_mini_widget)
+        widget_btn.pack(side=tk.LEFT, padx=4)
+
+        # Theme Switcher
+        theme_icon = "☀️ Light" if self.theme_name == "dark" else "🌙 Dark"
+        theme_btn = tk.Button(right_box, text=theme_icon, font=("Segoe UI", 9, "bold"),
+                              bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                              activebackground=self.colors["border_subtle"],
+                              relief=tk.FLAT, bd=0, padx=10, pady=3, cursor="hand2",
+                              command=self.toggle_theme)
+        theme_btn.pack(side=tk.LEFT, padx=4)
+
+    def build_sidebar(self, parent):
+        sidebar = tk.Frame(parent, bg=self.colors["sidebar_bg"], width=190,
+                           highlightthickness=1, highlightbackground=self.colors["border"])
+        sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        sidebar.pack_propagate(False)
+
+        # Navigation Buttons Box
+        nav_box = tk.Frame(sidebar, bg=self.colors["sidebar_bg"])
+        nav_box.pack(side=tk.TOP, fill=tk.X, padx=10, pady=16)
+
+        # Tab 1: Alarms & Calendar
+        self.btn_nav_alarms = self.create_nav_item(nav_box, "⏰  Alarms & Calendar", "alarms")
+        self.btn_nav_alarms.pack(fill=tk.X, pady=3)
+
+        # Tab 2: Focus Timers & Stats
+        self.btn_nav_timers = self.create_nav_item(nav_box, "⏱️  Focus Timers & Stats", "timers")
+        self.btn_nav_timers.pack(fill=tk.X, pady=3)
+
+        # Bottom Footer: Subtle Status & Version Pill
+        footer_box = tk.Frame(sidebar, bg=self.colors["sidebar_bg"])
+        footer_box.pack(side=tk.BOTTOM, fill=tk.X, padx=12, pady=12)
+
+        # Holiday Info summary badge
+        up_hol = self.get_upcoming_holiday()
+        hol_txt = f"🎉 {up_hol[2][:16]} ({up_hol[0]}d)" if up_hol else "✨ No upcoming holiday"
+        hol_lbl = tk.Label(footer_box, text=hol_txt, font=("Segoe UI", 8),
+                           fg=self.colors["text_secondary"], bg=self.colors["sidebar_bg"],
+                           wraplength=160, justify=tk.LEFT)
+        hol_lbl.pack(anchor="w", pady=(0, 6))
+
+        # Version & Up to Date pill (clean & small)
+        ver_lbl = tk.Label(footer_box, text=f"v{APP_VERSION} • Up to date", font=("Segoe UI", 8),
+                           fg=self.colors["accent_cyan"], bg=self.colors["sidebar_bg"])
+        ver_lbl.pack(anchor="w")
+
+    def create_nav_item(self, parent, text, key):
+        is_active = (self.current_tab == key)
+        bg_col = self.colors["nav_active_bg"] if is_active else self.colors["nav_inactive_bg"]
+        fg_col = self.colors["nav_active_fg"] if is_active else self.colors["nav_inactive_fg"]
+
+        btn = tk.Button(parent, text=text, font=("Segoe UI", 9, "bold" if is_active else "normal"),
+                        bg=bg_col, fg=fg_col,
+                        activebackground=self.colors["accent_hover"],
+                        activeforeground="#ffffff",
+                        relief=tk.FLAT, bd=0, padx=12, pady=8, anchor="w", cursor="hand2",
+                        command=lambda k=key: self.switch_nav(k))
+        return btn
+
+    def switch_nav(self, key):
+        if self.current_tab != key:
+            self.current_tab = key
+            self.refresh_ui()
+
+    def refresh_ui(self):
+        self.build_gui()
+
+    # ==========================================
+    # TAB 1: ALARMS & INTERACTIVE CALENDAR
+    # ==========================================
+    def render_active_tab(self):
+        for child in self.content_area.winfo_children():
+            child.destroy()
+
+        if self.current_tab == "alarms":
+            self.render_alarms_view()
+        elif self.current_tab == "timers":
+            self.render_timers_view()
+
+    def render_alarms_view(self):
+        # 2-Column Grid
+        grid_frame = tk.Frame(self.content_area, bg=self.colors["bg"])
+        grid_frame.pack(fill=tk.BOTH, expand=True)
+
+        left_col = tk.Frame(grid_frame, bg=self.colors["bg"])
+        left_col.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 8))
+
+        right_col = tk.Frame(grid_frame, bg=self.colors["bg"], width=420)
+        right_col.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(8, 0))
+
+        # --- LEFT: NEW ALARM FORM & ACTIVE LIST ---
+        form_card = tk.Frame(left_col, bg=self.colors["card_bg"],
+                             highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=12)
+        form_card.pack(fill=tk.X, pady=(0, 10))
+
+        lbl_head = tk.Label(form_card, text="ALARM SCHEDULER", font=("Segoe UI", 10, "bold"),
+                            fg=self.colors["accent_cyan"], bg=self.colors["card_bg"])
+        lbl_head.pack(anchor="w", pady=(0, 8))
+
+        # Dual Spinbox Time Picker with Permanent ':' separator
+        time_picker_frame = tk.Frame(form_card, bg=self.colors["card_bg"])
+        time_picker_frame.pack(fill=tk.X, pady=(0, 6))
+
+        tk.Label(time_picker_frame, text="Time:", font=("Segoe UI", 9, "bold"),
+                 fg=self.colors["text_primary"], bg=self.colors["card_bg"]).pack(side=tk.LEFT, padx=(0, 8))
+
+        self.spin_hour = tk.Spinbox(time_picker_frame, from_=0, to=23, wrap=True, width=3,
+                                    format="%02.0f", font=("Segoe UI", 12, "bold"),
+                                    bg=self.colors["entry_bg"], fg=self.colors["entry_fg"],
+                                    buttonbackground=self.colors["btn_bg"], bd=1, relief=tk.SOLID,
+                                    justify=tk.CENTER)
         self.spin_hour.delete(0, "end")
         self.spin_hour.insert(0, "07")
-        self.spin_hour.pack(side="left")
+        self.spin_hour.pack(side=tk.LEFT)
 
-        # Fixed Permanent Colon
-        tk.Label(picker_box, text=" : ", font=("Consolas", 18, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left", padx=4)
+        colon_lbl = tk.Label(time_picker_frame, text=" : ", font=("Segoe UI", 14, "bold"),
+                             fg=self.colors["accent_cyan"], bg=self.colors["card_bg"])
+        colon_lbl.pack(side=tk.LEFT, padx=2)
 
-        # Minute Spinbox
-        self.spin_min = tk.Spinbox(picker_box, from_=0, to=59, format="%02.0f", width=3, font=("Consolas", 16, "bold"), justify="center", bg=th["entry_bg"], fg=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
+        self.spin_min = tk.Spinbox(time_picker_frame, from_=0, to=59, wrap=True, width=3,
+                                   format="%02.0f", font=("Segoe UI", 12, "bold"),
+                                   bg=self.colors["entry_bg"], fg=self.colors["entry_fg"],
+                                   buttonbackground=self.colors["btn_bg"], bd=1, relief=tk.SOLID,
+                                   justify=tk.CENTER)
         self.spin_min.delete(0, "end")
         self.spin_min.insert(0, "30")
-        self.spin_min.pack(side="left")
+        self.spin_min.pack(side=tk.LEFT)
 
-        # Quick Preset Buttons Row
-        preset_row = tk.Frame(left_col, bg=th["card_bg"])
-        preset_row.pack(anchor="w", padx=16, pady=(0, 10))
-        for p_h, p_m in [("06", "00"), ("08", "00"), ("12", "00"), ("22", "30")]:
-            btn_p = tk.Button(preset_row, text=f"{p_h}:{p_m}", font=("Consolas", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=6, pady=2, cursor="hand2", command=lambda h=p_h, m=p_m: self.set_picker_time(h, m))
-            btn_p.pack(side="left", padx=(0, 4))
+        # Quick Preset Chips
+        presets_frame = tk.Frame(time_picker_frame, bg=self.colors["card_bg"])
+        presets_frame.pack(side=tk.RIGHT)
+        for t_str in ["06:00", "07:30", "09:00", "22:00"]:
+            btn_pre = tk.Button(presets_frame, text=t_str, font=("Segoe UI", 8),
+                                bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                                activebackground=self.colors["accent"], activeforeground="#ffffff",
+                                relief=tk.FLAT, bd=0, padx=5, pady=2, cursor="hand2",
+                                command=lambda s=t_str: self.apply_preset_time(s))
+            btn_pre.pack(side=tk.LEFT, padx=2)
 
-        # Label Entry
-        tk.Label(left_col, text=self.t("title_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(2, 2))
-        self.entry_title = tk.Entry(left_col, font=("Segoe UI", 10), bg=th["entry_bg"], fg=th["text_primary"], insertbackground=th["entry_fg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
-        self.entry_title.insert(0, "Mulai Kerja Pagi" if self.current_lang == "id" else "Morning Deep Work")
-        self.entry_title.pack(fill="x", padx=16, ipady=4)
+        # Alarm Label Entry
+        lbl_box = tk.Frame(form_card, bg=self.colors["card_bg"])
+        lbl_box.pack(fill=tk.X, pady=(0, 6))
+        tk.Label(lbl_box, text="Label:", font=("Segoe UI", 9),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(side=tk.LEFT, padx=(0, 8))
+        self.entry_label = tk.Entry(lbl_box, font=("Segoe UI", 9),
+                                    bg=self.colors["entry_bg"], fg=self.colors["text_primary"],
+                                    insertbackground=self.colors["text_primary"],
+                                    bd=1, relief=tk.SOLID)
+        self.entry_label.insert(0, "Work Standup")
+        self.entry_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # Tone Selector with Test Button
-        tk.Label(left_col, text=self.t("tone_label"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(8, 2))
-        tone_box = tk.Frame(left_col, bg=th["card_bg"])
-        tone_box.pack(fill="x", padx=16)
+        # Tone Selector with Live Preview Button
+        tone_box = tk.Frame(form_card, bg=self.colors["card_bg"])
+        tone_box.pack(fill=tk.X, pady=(0, 6))
+        tk.Label(tone_box, text="Tone:", font=("Segoe UI", 9),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(side=tk.LEFT, padx=(0, 10))
 
-        self.var_alarm_tone = tk.StringVar(value=self.current_tone)
-        self.combo_tone = ttk.Combobox(tone_box, textvariable=self.var_alarm_tone, values=list(TONES.keys()), state="readonly", font=("Segoe UI", 9))
-        self.combo_tone.pack(side="left", fill="x", expand=True)
+        self.tone_var = tk.StringVar(value="gentle")
+        tone_names_list = list(TONES.keys())
+        tone_combo = ttk.Combobox(tone_box, textvariable=self.tone_var, values=tone_names_list,
+                                  state="readonly", width=15, font=("Segoe UI", 9))
+        tone_combo.pack(side=tk.LEFT, padx=(0, 8))
 
-        btn_test = tk.Button(tone_box, text="🔊", font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=8, cursor="hand2", command=lambda: play_audio_tone(self.var_alarm_tone.get()))
-        btn_test.pack(side="right", padx=(4, 0))
+        test_tone_btn = tk.Button(tone_box, text="🔊 Test", font=("Segoe UI", 8, "bold"),
+                                  bg=self.colors["btn_bg"], fg=self.colors["accent_cyan"],
+                                  activebackground=self.colors["accent"], activeforeground="#ffffff",
+                                  relief=tk.FLAT, bd=0, padx=8, pady=2, cursor="hand2",
+                                  command=lambda: self.play_tone(self.tone_var.get()))
+        test_tone_btn.pack(side=tk.LEFT)
 
-        # Day Pills Selector (Sun - Sat)
-        tk.Label(left_col, text=self.t("repeat_days"), font=("Segoe UI", 9), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(8, 4))
-        day_pills_row = tk.Frame(left_col, bg=th["card_bg"])
-        day_pills_row.pack(anchor="w", padx=16)
+        # Repeat Days Pills
+        days_box = tk.Frame(form_card, bg=self.colors["card_bg"])
+        days_box.pack(fill=tk.X, pady=(0, 8))
+        tk.Label(days_box, text="Repeat:", font=("Segoe UI", 9),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(side=tk.LEFT, padx=(0, 6))
 
-        day_labels = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
-        self.day_buttons = []
-        for i in range(7):
-            d_btn = tk.Button(
-                day_pills_row,
-                text=day_labels[i],
-                font=("Segoe UI", 7, "bold"),
-                width=3,
-                bg=th["accent"] if i in self.selected_form_days else th["btn_bg"],
-                fg="white" if i in self.selected_form_days else th["text_secondary"],
-                relief="flat",
-                cursor="hand2",
-                command=lambda day_idx=i: self.toggle_form_day(day_idx)
-            )
-            d_btn.pack(side="left", padx=1)
-            self.day_buttons.append(d_btn)
+        self.repeat_vars = {}
+        for d in DAY_NAMES:
+            var = tk.BooleanVar(value=(d not in ["Sun", "Sat"]))  # Default Mon-Fri
+            self.repeat_vars[d] = var
+            chk = tk.Checkbutton(days_box, text=d, variable=var, font=("Segoe UI", 8),
+                                 bg=self.colors["card_bg"], fg=self.colors["text_primary"],
+                                 activebackground=self.colors["card_bg"],
+                                 selectcolor=self.colors["entry_bg"], cursor="hand2")
+            chk.pack(side=tk.LEFT, padx=1)
 
-        # Submit Button
-        btn_add = tk.Button(left_col, text=self.t("btn_add_alarm"), font=("Segoe UI", 10, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", cursor="hand2", command=self.add_alarm_from_picker)
-        btn_add.pack(fill="x", padx=16, pady=(16, 12), ipady=5)
+        # Smart Options: Skip Holiday & Math Challenge Checkboxes
+        opts_box = tk.Frame(form_card, bg=self.colors["card_bg"])
+        opts_box.pack(fill=tk.X, pady=(0, 10))
 
-        # Right Column: Mini Calendar (Top) + Alarms List (Bottom)
-        right_col = tk.Frame(cols, bg=th["bg"])
-        right_col.pack(side="right", fill="both", expand=True)
+        self.var_skip_hol = tk.BooleanVar(value=True)
+        chk_hol = tk.Checkbutton(opts_box, text="Skip on Public Holidays", variable=self.var_skip_hol,
+                                 font=("Segoe UI", 8, "bold"),
+                                 bg=self.colors["card_bg"], fg=self.colors["holiday_fg"],
+                                 activebackground=self.colors["card_bg"],
+                                 selectcolor=self.colors["entry_bg"], cursor="hand2")
+        chk_hol.pack(side=tk.LEFT, padx=(0, 12))
 
-        # Mini Calendar Card (Height ~170px)
-        cal_card = tk.Frame(right_col, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        cal_card.pack(fill="x", pady=(0, 10))
-        self.build_mini_calendar(cal_card)
+        self.var_math_chal = tk.BooleanVar(value=False)
+        chk_math = tk.Checkbutton(opts_box, text="Math Challenge to Dismiss", variable=self.var_math_chal,
+                                  font=("Segoe UI", 8),
+                                  bg=self.colors["card_bg"], fg=self.colors["accent_cyan"],
+                                  activebackground=self.colors["card_bg"],
+                                  selectcolor=self.colors["entry_bg"], cursor="hand2")
+        chk_math.pack(side=tk.LEFT)
 
-        # Alarms List Card (Remaining height)
-        list_card = tk.Frame(right_col, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        list_card.pack(fill="both", expand=True)
+        # Add Alarm Button
+        add_btn = tk.Button(form_card, text="+ Add Alarm", font=("Segoe UI", 9, "bold"),
+                            bg=self.colors["accent"], fg="#ffffff",
+                            activebackground=self.colors["accent_hover"], activeforeground="#ffffff",
+                            relief=tk.FLAT, bd=0, padx=14, pady=6, cursor="hand2",
+                            command=self.add_alarm)
+        add_btn.pack(anchor="e")
 
-        tk.Label(list_card, text=self.t("active_alarms"), font=("Segoe UI", 11, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 6))
+        # Active Alarms List Card
+        list_card = tk.Frame(left_col, bg=self.colors["card_bg"],
+                             highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=10)
+        list_card.pack(fill=tk.BOTH, expand=True)
 
-        self.alarms_frame = tk.Frame(list_card, bg=th["card_bg"])
-        self.alarms_frame.pack(fill="both", expand=True, padx=16, pady=(0, 12))
+        lbl_list = tk.Label(list_card, text="ACTIVE ALARMS", font=("Segoe UI", 10, "bold"),
+                            fg=self.colors["accent_cyan"], bg=self.colors["card_bg"])
+        lbl_list.pack(anchor="w", pady=(0, 6))
 
-        self.refresh_alarms_list()
+        self.alarms_scroll_frame = tk.Frame(list_card, bg=self.colors["card_bg"])
+        self.alarms_scroll_frame.pack(fill=tk.BOTH, expand=True)
 
-    def set_picker_time(self, h, m):
+        self.render_alarms_list()
+
+        # --- RIGHT: INTERACTIVE CALENDAR & HOLIDAYS ---
+        cal_card = tk.Frame(right_col, bg=self.colors["card_bg"],
+                            highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=12)
+        cal_card.pack(fill=tk.BOTH, expand=True)
+
+        self.render_calendar_component(cal_card)
+
+    def apply_preset_time(self, t_str):
+        h, m = t_str.split(":")
         self.spin_hour.delete(0, "end")
         self.spin_hour.insert(0, h)
         self.spin_min.delete(0, "end")
         self.spin_min.insert(0, m)
 
-    def toggle_form_day(self, day_idx):
-        th = THEMES[self.current_theme]
-        if day_idx in self.selected_form_days:
-            if len(self.selected_form_days) > 1:
-                self.selected_form_days.remove(day_idx)
-        else:
-            self.selected_form_days.append(day_idx)
-            self.selected_form_days.sort()
-
-        for i, btn in enumerate(self.day_buttons):
-            if i in self.selected_form_days:
-                btn.config(bg=th["accent"], fg="white")
-            else:
-                btn.config(bg=th["btn_bg"], fg=th["text_secondary"])
-
-    def build_mini_calendar(self, parent):
-        th = THEMES[self.current_theme]
-        now = datetime.datetime.now()
-        year, month = now.year, now.month
-        
-        cal_hdr = tk.Frame(parent, bg=th["card_bg"])
-        cal_hdr.pack(fill="x", padx=14, pady=(8, 4))
-
-        month_name = now.strftime("%B %Y")
-        tk.Label(cal_hdr, text=f"📅 {month_name.upper()}", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left")
-        tk.Label(cal_hdr, text=f"Hari Ini: {now.day}", font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="right")
-
-        # Calendar Grid Table
-        grid_frame = tk.Frame(parent, bg=th["card_bg"])
-        grid_frame.pack(fill="x", padx=14, pady=(0, 8))
-
-        day_headers = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
-        for col_idx, d_name in enumerate(day_headers):
-            tk.Label(grid_frame, text=d_name, font=("Segoe UI", 8, "bold"), fg=th["text_secondary"], bg=th["card_bg"], width=4).grid(row=0, column=col_idx, padx=2, pady=1)
-
-        # Sunday first indexing
-        cal = calendar.Calendar(firstweekday=6)
-        month_days = cal.monthdayscalendar(year, month)
-
-        for r_idx, week in enumerate(month_days):
-            for c_idx, day_num in enumerate(week):
-                if day_num == 0:
-                    lbl = tk.Label(grid_frame, text="", bg=th["card_bg"], width=4)
-                else:
-                    is_today = (day_num == now.day)
-                    bg_col = th["accent"] if is_today else th["subcard_bg"]
-                    fg_col = "white" if is_today else th["text_primary"]
-                    lbl = tk.Label(grid_frame, text=str(day_num), font=("Segoe UI", 8, "bold" if is_today else "normal"), bg=bg_col, fg=fg_col, width=4, pady=1)
-                lbl.grid(row=r_idx + 1, column=c_idx, padx=2, pady=1)
-
-    def refresh_alarms_list(self):
-        th = THEMES[self.current_theme]
-        for w in self.alarms_frame.winfo_children():
-            w.destroy()
-
-        alarms = self.data.get("alarms", [])
-        if not alarms:
-            tk.Label(self.alarms_frame, text=self.t("no_alarms"), fg=th["text_secondary"], bg=th["card_bg"], font=("Segoe UI", 9, "italic")).pack(pady=20)
-            return
-
-        day_labels = DAY_NAMES_ID if self.current_lang == "id" else DAY_NAMES_EN
-
-        for a in alarms:
-            card = tk.Frame(self.alarms_frame, bg=th["subcard_bg"], relief="flat", highlightthickness=1, highlightbackground=th["border_subtle"])
-            card.pack(fill="x", pady=3)
-
-            # Left: Time & Info
-            left_box = tk.Frame(card, bg=th["subcard_bg"])
-            left_box.pack(side="left", padx=12, pady=6)
-
-            time_col = th["accent_cyan"] if a.get("enabled", True) else th["text_secondary"]
-            tk.Label(left_box, text=a["time"], font=("Consolas", 17, "bold"), fg=time_col, bg=th["subcard_bg"]).pack(anchor="w")
-
-            # Day Chips sub-row
-            chips_row = tk.Frame(left_box, bg=th["subcard_bg"])
-            chips_row.pack(anchor="w", pady=(2, 0))
-            tk.Label(chips_row, text=a.get("title", "Alarm"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"] if a.get("enabled", True) else th["text_secondary"], bg=th["subcard_bg"]).pack(side="left", padx=(0, 6))
-
-            for d_i in range(7):
-                in_days = d_i in a.get("days", [0, 1, 2, 3, 4, 5, 6])
-                d_fg = th["accent_cyan"] if (in_days and a.get("enabled", True)) else th["border_subtle"]
-                tk.Label(chips_row, text=day_labels[d_i][0], font=("Consolas", 7, "bold"), fg=d_fg, bg=th["subcard_bg"]).pack(side="left", padx=1)
-
-            # Right: Action Buttons
-            right_box = tk.Frame(card, bg=th["subcard_bg"])
-            right_box.pack(side="right", padx=12, pady=6)
-
-            st_text = self.t("btn_active") if a.get("enabled", True) else self.t("btn_inactive")
-            st_bg = "#059669" if a.get("enabled", True) else "#64748b"
-            t_btn = tk.Button(right_box, text=st_text, font=("Segoe UI", 8, "bold"), bg=st_bg, fg="white", relief="flat", padx=8, pady=2, cursor="hand2", command=lambda item=a: self.toggle_alarm(item))
-            t_btn.pack(side="left", padx=3)
-
-            btn_test = tk.Button(right_box, text="🔊", font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=6, pady=2, cursor="hand2", command=lambda item=a: play_audio_tone(item.get("tone", "gentle")))
-            btn_test.pack(side="left", padx=3)
-
-            d_btn = tk.Button(right_box, text="✕", font=("Segoe UI", 8, "bold"), bg="#dc2626", fg="white", relief="flat", padx=6, pady=2, cursor="hand2", command=lambda a_id=a["id"]: self.delete_alarm(a_id))
-            d_btn.pack(side="left", padx=3)
-
-    def add_alarm_from_picker(self):
+    def add_alarm(self):
         try:
             h = int(self.spin_hour.get())
             m = int(self.spin_min.get())
-            if not (0 <= h < 24 and 0 <= m < 60):
+            if not (0 <= h <= 23 and 0 <= m <= 59):
                 raise ValueError
-            valid_time = f"{h:02d}:{m:02d}"
-        except Exception:
-            messagebox.showerror("Error", self.t("format_err"))
+        except ValueError:
+            messagebox.showerror("Invalid Time", "Please enter a valid hour (00-23) and minute (00-59).")
             return
 
-        title = self.entry_title.get().strip() or "Alarm"
-        tone = self.var_alarm_tone.get()
+        t_str = f"{h:02d}:{m:02d}"
+        label = self.entry_label.get().strip() or "Alarm"
+        tone = self.tone_var.get()
+        repeat = [d for d, v in self.repeat_vars.items() if v.get()]
+        if not repeat:
+            repeat = list(DAY_NAMES)
 
-        new_a = {
-            "id": f"alarm-{int(time.time()*1000)}",
-            "title": title,
-            "time": valid_time,
+        new_item = {
+            "id": int(time.time() * 1000),
+            "time": t_str,
+            "label": label,
+            "tone": tone,
+            "repeat": repeat,
             "enabled": True,
-            "days": list(self.selected_form_days),
-            "tone": tone
+            "skip_holiday": self.var_skip_hol.get(),
+            "math_challenge": self.var_math_chal.get()
         }
-        self.data["alarms"].append(new_a)
+
+        self.data["alarms"].append(new_item)
         self.save_data()
-        self.refresh_alarms_list()
+        self.render_alarms_list()
 
-    def toggle_alarm(self, a):
-        a["enabled"] = not a.get("enabled", True)
-        self.save_data()
-        self.refresh_alarms_list()
+    def render_alarms_list(self):
+        for w in self.alarms_scroll_frame.winfo_children():
+            w.destroy()
 
-    def delete_alarm(self, a_id):
-        self.data["alarms"] = [a for a in self.data.get("alarms", []) if a.get("id") != a_id]
-        self.save_data()
-        self.refresh_alarms_list()
-
-    # =========================================================================
-    # VIEW 2: FOCUS TIMERS & CIRCULAR PROGRESS RINGS
-    # =========================================================================
-    def build_timers_view(self, parent):
-        th = THEMES[self.current_theme]
-
-        cards_row = tk.Frame(parent, bg=th["bg"])
-        cards_row.pack(fill="both", expand=True)
-
-        # 1. Left Card: Pomodoro Circular Timer
-        pomo_card = tk.Frame(cards_row, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        pomo_card.pack(side="left", fill="both", expand=True, padx=(0, 8))
-
-        tk.Label(pomo_card, text=self.t("pomo_title"), font=("Segoe UI", 12, "bold"), fg=th["ring_pomo"], bg=th["card_bg"]).pack(pady=(16, 2))
-        
-        state_txt = self.t("pomo_state_work") if not self.pomodoro_is_break else self.t("pomo_state_break")
-        self.lbl_pomo_state = tk.Label(pomo_card, text=state_txt, font=("Segoe UI", 8, "bold"), fg=th["text_secondary"], bg=th["card_bg"])
-        self.lbl_pomo_state.pack(pady=(0, 6))
-
-        # Circular Canvas
-        self.canvas_pomo = tk.Canvas(pomo_card, width=200, height=200, bg=th["card_bg"], highlightthickness=0)
-        self.canvas_pomo.pack(pady=4)
-
-        # Action Buttons
-        pomo_btns = tk.Frame(pomo_card, bg=th["card_bg"])
-        pomo_btns.pack(pady=10)
-
-        self.btn_pomo = tk.Button(pomo_btns, text=self.t("btn_pomo_start"), font=("Segoe UI", 9, "bold"), bg=th["ring_pomo"], fg="white", relief="flat", padx=14, pady=6, cursor="hand2", command=self.toggle_pomodoro)
-        self.btn_pomo.pack(side="left", padx=4)
-
-        btn_pomo_r = tk.Button(pomo_btns, text=self.t("btn_pomo_reset"), font=("Segoe UI", 9), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=6, cursor="hand2", command=self.reset_pomodoro)
-        btn_pomo_r.pack(side="left", padx=4)
-
-        tk.Label(pomo_card, text=self.t("pomo_desc"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=280).pack(pady=(4, 12))
-
-        # 2. Right Card: 20-20-20 Eye Rest Circular Timer
-        eye_card = tk.Frame(cards_row, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        eye_card.pack(side="right", fill="both", expand=True, padx=(8, 0))
-
-        tk.Label(eye_card, text=self.t("eye_title"), font=("Segoe UI", 12, "bold"), fg=th["ring_eye"], bg=th["card_bg"]).pack(pady=(16, 2))
-
-        # Toggle Switch Row
-        st_txt = self.t("eye_toggle_on") if self.eye_rest_enabled else self.t("eye_toggle_off")
-        st_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
-        self.btn_eye_toggle = tk.Button(eye_card, text=st_txt, font=("Segoe UI", 8, "bold"), bg=st_bg, fg="white", relief="flat", padx=10, pady=2, cursor="hand2", command=self.toggle_eye_rest_enabled)
-        self.btn_eye_toggle.pack(pady=(0, 6))
-
-        # Circular Canvas
-        self.canvas_eye = tk.Canvas(eye_card, width=200, height=200, bg=th["card_bg"], highlightthickness=0)
-        self.canvas_eye.pack(pady=4)
-
-        # Interval Options Row
-        int_row = tk.Frame(eye_card, bg=th["card_bg"])
-        int_row.pack(pady=4)
-        tk.Label(int_row, text=self.t("eye_interval_lbl"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="left", padx=4)
-
-        for mins in [15, 20, 30, 45]:
-            act = (mins == self.eye_interval_min)
-            b_bg = th["accent"] if act else th["btn_bg"]
-            b_fg = "white" if act else th["btn_fg"]
-            b_int = tk.Button(int_row, text=f"{mins}m", font=("Segoe UI", 8, "bold" if act else "normal"), bg=b_bg, fg=b_fg, relief="flat", padx=6, pady=2, cursor="hand2", command=lambda m=mins: self.set_eye_interval(m))
-            b_int.pack(side="left", padx=2)
-
-        btn_eye_r = tk.Button(eye_card, text=self.t("btn_eye_reset"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=4, cursor="hand2", command=self.reset_eye_rest)
-        btn_eye_r.pack(pady=4)
-
-        tk.Label(eye_card, text=self.t("eye_desc"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"], justify="center", wraplength=280).pack(pady=(2, 12))
-
-        self.update_timer_rings()
-
-    def update_timer_rings(self):
-        if not hasattr(self, 'canvas_pomo') or not self.canvas_pomo.winfo_exists():
+        if not self.data["alarms"]:
+            tk.Label(self.alarms_scroll_frame, text="No active alarms configured.",
+                     font=("Segoe UI", 9, "italic"),
+                     fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(pady=12)
             return
 
-        th = THEMES[self.current_theme]
-        
-        # 1. Draw Pomodoro Ring
-        self.canvas_pomo.delete("all")
-        p_pct = 1.0 - (self.pomodoro_seconds_left / max(1, self.pomodoro_total_sec))
-        self.draw_circular_arc(self.canvas_pomo, 200, 200, p_pct, th["ring_pomo"], th["ring_bg"])
-        
-        m_p = self.pomodoro_seconds_left // 60
-        s_p = self.pomodoro_seconds_left % 60
-        self.canvas_pomo.create_text(100, 100, text=f"{m_p:02d}:{s_p:02d}", font=("Consolas", 28, "bold"), fill=th["text_primary"])
+        for al in self.data["alarms"]:
+            row = tk.Frame(self.alarms_scroll_frame, bg=self.colors["subcard_bg"],
+                           highlightthickness=1, highlightbackground=self.colors["border"],
+                           padx=10, pady=6)
+            row.pack(fill=tk.X, pady=3)
 
-        # 2. Draw Eye Rest Ring
-        self.canvas_eye.delete("all")
-        e_pct = 1.0 - (self.eye_rest_seconds_left / max(1, self.eye_rest_total_sec))
-        ring_col = th["ring_eye"] if self.eye_rest_enabled else th["border_subtle"]
-        self.draw_circular_arc(self.canvas_eye, 200, 200, e_pct if self.eye_rest_enabled else 0.0, ring_col, th["ring_bg"])
-        
-        m_e = self.eye_rest_seconds_left // 60
-        s_e = self.eye_rest_seconds_left % 60
-        txt_col = th["text_primary"] if self.eye_rest_enabled else th["text_secondary"]
-        self.canvas_eye.create_text(100, 100, text=f"{m_e:02d}:{s_e:02d}", font=("Consolas", 28, "bold"), fill=txt_col)
+            # Left: Time & Label
+            left_info = tk.Frame(row, bg=self.colors["subcard_bg"])
+            left_info.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-    def draw_circular_arc(self, canvas, w, h, progress_pct, arc_color, track_color):
-        pad = 18
-        width_ring = 12
-        # Background full circle track
-        canvas.create_oval(pad, pad, w - pad, h - pad, outline=track_color, width=width_ring)
-        # Active progress arc
-        if progress_pct > 0:
-            extent = -359.9 * min(1.0, max(0.0, progress_pct))
-            canvas.create_arc(pad, pad, w - pad, h - pad, start=90, extent=extent, outline=arc_color, width=width_ring, style="arc")
+            t_lbl = tk.Label(left_info, text=al["time"], font=("Segoe UI", 11, "bold"),
+                             fg=self.colors["accent_cyan"] if al["enabled"] else self.colors["text_secondary"],
+                             bg=self.colors["subcard_bg"])
+            t_lbl.pack(anchor="w")
 
-    def toggle_pomodoro(self):
-        self.pomodoro_is_running = not self.pomodoro_is_running
-        if self.pomodoro_is_running:
-            self.btn_pomo.config(text=self.t("btn_pomo_pause"), bg="#d97706")
+            tag_txt = al["label"]
+            if al.get("skip_holiday"):
+                tag_txt += " • 🏖️ Skip Holiday"
+            if al.get("math_challenge"):
+                tag_txt += " • 🧠 Math"
+
+            sub_lbl = tk.Label(left_info, text=tag_txt, font=("Segoe UI", 8),
+                               fg=self.colors["text_secondary"], bg=self.colors["subcard_bg"])
+            sub_lbl.pack(anchor="w")
+
+            # Right: Toggle & Delete
+            right_ctrl = tk.Frame(row, bg=self.colors["subcard_bg"])
+            right_ctrl.pack(side=tk.RIGHT)
+
+            status_btn = tk.Button(right_ctrl,
+                                   text="ACTIVE" if al["enabled"] else "OFF",
+                                   font=("Segoe UI", 8, "bold"),
+                                   bg=self.colors["ring_eye"] if al["enabled"] else self.colors["btn_bg"],
+                                   fg="#ffffff" if al["enabled"] else self.colors["text_secondary"],
+                                   relief=tk.FLAT, bd=0, padx=8, pady=2, cursor="hand2",
+                                   command=lambda a=al: self.toggle_alarm_status(a))
+            status_btn.pack(side=tk.LEFT, padx=3)
+
+            del_btn = tk.Button(right_ctrl, text="✕", font=("Segoe UI", 8, "bold"),
+                                bg=self.colors["btn_bg"], fg=self.colors["ring_pomo"],
+                                relief=tk.FLAT, bd=0, padx=6, pady=2, cursor="hand2",
+                                command=lambda a=al: self.delete_alarm(a))
+            del_btn.pack(side=tk.LEFT)
+
+    def toggle_alarm_status(self, alarm_item):
+        alarm_item["enabled"] = not alarm_item["enabled"]
+        self.save_data()
+        self.render_alarms_list()
+
+    def delete_alarm(self, alarm_item):
+        self.data["alarms"] = [a for a in self.data["alarms"] if a["id"] != alarm_item["id"]]
+        self.save_data()
+        self.render_alarms_list()
+
+    # ==========================================
+    # CALENDAR, HOLIDAYS & D-DAY COMPONENT
+    # ==========================================
+    def render_calendar_component(self, parent):
+        for w in parent.winfo_children():
+            w.destroy()
+
+        # Month Navigation Bar
+        nav_cal = tk.Frame(parent, bg=self.colors["card_bg"])
+        nav_cal.pack(fill=tk.X, pady=(0, 6))
+
+        month_name = calendar.month_name[self.cal_month]
+        lbl_m = tk.Label(nav_cal, text=f"{month_name.upper()} {self.cal_year}", font=("Segoe UI", 10, "bold"),
+                         fg=self.colors["accent_cyan"], bg=self.colors["card_bg"])
+        lbl_m.pack(side=tk.LEFT)
+
+        nav_btns = tk.Frame(nav_cal, bg=self.colors["card_bg"])
+        nav_btns.pack(side=tk.RIGHT)
+
+        btn_prev = tk.Button(nav_btns, text="◀", font=("Segoe UI", 8),
+                             bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                             relief=tk.FLAT, bd=0, padx=6, pady=2, cursor="hand2",
+                             command=self.prev_month)
+        btn_prev.pack(side=tk.LEFT, padx=2)
+
+        btn_today = tk.Button(nav_btns, text="Today", font=("Segoe UI", 8),
+                              bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                              relief=tk.FLAT, bd=0, padx=6, pady=2, cursor="hand2",
+                              command=self.reset_cal_today)
+        btn_today.pack(side=tk.LEFT, padx=2)
+
+        btn_next = tk.Button(nav_btns, text="▶", font=("Segoe UI", 8),
+                             bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                             relief=tk.FLAT, bd=0, padx=6, pady=2, cursor="hand2",
+                             command=self.next_month)
+        btn_next.pack(side=tk.LEFT, padx=2)
+
+        # Long Weekend Banner (if any detected this month)
+        lw_list = self.get_month_long_weekends(self.cal_year, self.cal_month)
+        if lw_list:
+            lw_text = f"🏖️ Long Weekend: {lw_list[0][0]}-{lw_list[0][1]} {month_name[:3]} ({lw_list[0][2]} Days Off)"
+            lw_banner = tk.Label(parent, text=lw_text, font=("Segoe UI", 8, "bold"),
+                                 bg=self.colors["holiday_bg"], fg=self.colors["holiday_fg"],
+                                 padx=6, pady=2)
+            lw_banner.pack(fill=tk.X, pady=(0, 6))
+
+        # Day Headers (Sun - Sat)
+        grid_container = tk.Frame(parent, bg=self.colors["card_bg"])
+        grid_container.pack(fill=tk.BOTH, expand=True)
+
+        for col_idx, d_name in enumerate(DAY_NAMES):
+            fg_head = self.colors["holiday_fg"] if d_name == "Sun" else self.colors["text_secondary"]
+            lbl_d = tk.Label(grid_container, text=d_name, font=("Segoe UI", 8, "bold"),
+                             fg=fg_head, bg=self.colors["card_bg"], width=4)
+            lbl_d.grid(row=0, column=col_idx, pady=2, sticky="nsew")
+
+        # Calendar Date Grid Calculation
+        cal_matrix = calendar.monthcalendar(self.cal_year, self.cal_month)
+        today_obj = datetime.date.today()
+
+        for row_idx, week in enumerate(cal_matrix):
+            # Calendar module has weeks starting Monday; we re-align to Sunday:
+            # Shift Sunday from index 6 to index 0:
+            sunday_first_week = [week[6]] + week[0:6]
+
+            for col_idx, day_num in enumerate(sunday_first_week):
+                if day_num == 0:
+                    lbl_empty = tk.Label(grid_container, text="", bg=self.colors["card_bg"], width=4)
+                    lbl_empty.grid(row=row_idx + 1, column=col_idx, padx=1, pady=1, sticky="nsew")
+                else:
+                    d_obj = datetime.date(self.cal_year, self.cal_month, day_num)
+                    d_str = d_obj.strftime("%Y-%m-%d")
+                    is_today = (d_obj == today_obj)
+                    is_hol, hol_name = self.is_holiday(d_obj)
+                    has_memo = d_str in self.data.get("memos", {})
+
+                    # Color assignment
+                    if is_today:
+                        bg_d = self.colors["today_bg"]
+                        fg_d = self.colors["today_fg"]
+                    elif is_hol:
+                        bg_d = self.colors["holiday_bg"]
+                        fg_d = self.colors["holiday_fg"]
+                    else:
+                        bg_d = self.colors["subcard_bg"]
+                        fg_d = self.colors["text_primary"]
+
+                    day_text = f"{day_num}"
+                    if has_memo:
+                        day_text += " •"
+
+                    btn_day = tk.Button(grid_container, text=day_text, font=("Segoe UI", 8, "bold" if (is_today or is_hol) else "normal"),
+                                        bg=bg_d, fg=fg_d, activebackground=self.colors["accent"], activeforeground="#ffffff",
+                                        relief=tk.FLAT, bd=0, padx=2, pady=2, cursor="hand2",
+                                        command=lambda ds=d_str, hn=hol_name: self.select_calendar_date(ds, hn))
+                    btn_day.grid(row=row_idx + 1, column=col_idx, padx=1, pady=1, sticky="nsew")
+
+        for i in range(7):
+            grid_container.columnconfigure(i, weight=1)
+
+        # Selected Date Info & Quick Memo Card (Bottom of Calendar)
+        info_frame = tk.Frame(parent, bg=self.colors["subcard_bg"],
+                              highlightthickness=1, highlightbackground=self.colors["border"],
+                              padx=10, pady=8)
+        info_frame.pack(fill=tk.X, pady=(10, 0))
+
+        d_sel_obj = datetime.datetime.strptime(self.selected_date, "%Y-%m-%d").date()
+        is_sel_hol, sel_hol_name = self.is_holiday(d_sel_obj)
+        memo_txt = self.data.get("memos", {}).get(self.selected_date, "")
+
+        title_sel = d_sel_obj.strftime("%A, %d %B %Y")
+        if is_sel_hol:
+            title_sel += f" — {sel_hol_name}"
+
+        tk.Label(info_frame, text=title_sel, font=("Segoe UI", 8, "bold"),
+                 fg=self.colors["holiday_fg"] if is_sel_hol else self.colors["accent_cyan"],
+                 bg=self.colors["subcard_bg"], wraplength=380, justify=tk.LEFT).pack(anchor="w")
+
+        memo_lbl_txt = f"📝 Note: {memo_txt}" if memo_txt else "Click below to add a quick daily note."
+        tk.Label(info_frame, text=memo_lbl_txt, font=("Segoe UI", 8),
+                 fg=self.colors["text_secondary"], bg=self.colors["subcard_bg"],
+                 wraplength=380, justify=tk.LEFT).pack(anchor="w", pady=(2, 4))
+
+        btn_memo = tk.Button(info_frame, text="✏️ Edit Note for Date", font=("Segoe UI", 8),
+                             bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                             relief=tk.FLAT, bd=0, padx=8, pady=2, cursor="hand2",
+                             command=self.open_memo_dialog)
+        btn_memo.pack(anchor="e")
+
+    def prev_month(self):
+        if self.cal_month == 1:
+            self.cal_month = 12
+            self.cal_year -= 1
         else:
-            self.btn_pomo.config(text=self.t("btn_pomo_resume"), bg=THEMES[self.current_theme]["ring_pomo"])
+            self.cal_month -= 1
+        if self.current_tab == "alarms":
+            self.render_alarms_view()
 
-    def reset_pomodoro(self):
-        self.pomodoro_is_running = False
-        self.pomodoro_is_break = False
-        self.pomodoro_total_sec = 25 * 60
-        self.pomodoro_seconds_left = 25 * 60
-        self.btn_pomo.config(text=self.t("btn_pomo_start"), bg=THEMES[self.current_theme]["ring_pomo"])
-        self.lbl_pomo_state.config(text=self.t("pomo_state_work"))
-        self.update_timer_rings()
+    def next_month(self):
+        if self.cal_month == 12:
+            self.cal_month = 1
+            self.cal_year += 1
+        else:
+            self.cal_month += 1
+        if self.current_tab == "alarms":
+            self.render_alarms_view()
 
-    def toggle_eye_rest_enabled(self):
-        self.eye_rest_enabled = not self.eye_rest_enabled
+    def reset_cal_today(self):
+        today = datetime.date.today()
+        self.cal_year = today.year
+        self.cal_month = today.month
+        self.selected_date = today.strftime("%Y-%m-%d")
+        if self.current_tab == "alarms":
+            self.render_alarms_view()
+
+    def select_calendar_date(self, date_str, holiday_name):
+        self.selected_date = date_str
+        if self.current_tab == "alarms":
+            self.render_alarms_view()
+
+    def open_memo_dialog(self):
+        dlg = tk.Toplevel(self.root)
+        dlg.title(f"Note — {self.selected_date}")
+        dlg.geometry("360x180")
+        dlg.configure(bg=self.colors["card_bg"])
+        dlg.transient(self.root)
+        dlg.grab_set()
+
+        tk.Label(dlg, text=f"Daily Memo for {self.selected_date}:", font=("Segoe UI", 9, "bold"),
+                 fg=self.colors["accent_cyan"], bg=self.colors["card_bg"]).pack(padx=14, pady=(14, 6), anchor="w")
+
+        curr_note = self.data.get("memos", {}).get(self.selected_date, "")
+        txt_entry = tk.Entry(dlg, font=("Segoe UI", 9), bg=self.colors["entry_bg"],
+                             fg=self.colors["text_primary"], insertbackground=self.colors["text_primary"],
+                             bd=1, relief=tk.SOLID)
+        txt_entry.insert(0, curr_note)
+        txt_entry.pack(fill=tk.X, padx=14, pady=6)
+        txt_entry.focus_set()
+
+        btn_box = tk.Frame(dlg, bg=self.colors["card_bg"])
+        btn_box.pack(fill=tk.X, padx=14, pady=10)
+
+        def save_note():
+            val = txt_entry.get().strip()
+            if "memos" not in self.data:
+                self.data["memos"] = {}
+            if val:
+                self.data["memos"][self.selected_date] = val
+            else:
+                self.data["memos"].pop(self.selected_date, None)
+            self.save_data()
+            dlg.destroy()
+            if self.current_tab == "alarms":
+                self.render_alarms_view()
+
+        tk.Button(btn_box, text="Save Note", font=("Segoe UI", 9, "bold"),
+                  bg=self.colors["accent"], fg="#ffffff", relief=tk.FLAT, bd=0, padx=12, pady=4,
+                  command=save_note).pack(side=tk.RIGHT, padx=4)
+
+        tk.Button(btn_box, text="Cancel", font=("Segoe UI", 9),
+                  bg=self.colors["btn_bg"], fg=self.colors["text_primary"], relief=tk.FLAT, bd=0, padx=10, pady=4,
+                  command=dlg.destroy).pack(side=tk.RIGHT)
+
+    # ==========================================
+    # TAB 2: FOCUS TIMERS & WEEKLY ANALYTICS
+    # ==========================================
+    def render_timers_view(self):
+        container = tk.Frame(self.content_area, bg=self.colors["bg"])
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Top Row: Dual Circular Progress Rings (Pomodoro & Eye Rest)
+        top_row = tk.Frame(container, bg=self.colors["bg"])
+        top_row.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        # --- Card 1: Pomodoro 25/5 Timer ---
+        pomo_card = tk.Frame(top_row, bg=self.colors["card_bg"],
+                             highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=12)
+        pomo_card.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 6))
+
+        tk.Label(pomo_card, text="POMODORO FOCUS ENGINE", font=("Segoe UI", 10, "bold"),
+                 fg=self.colors["ring_pomo"], bg=self.colors["card_bg"]).pack(anchor="w")
+
+        state_txt = "WORK SESSION (25m)" if self.pomo_mode == "work" else "BREAK REST (5m)"
+        tk.Label(pomo_card, text=state_txt, font=("Segoe UI", 8),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(anchor="w", pady=(0, 6))
+
+        self.pomo_canvas = tk.Canvas(pomo_card, width=170, height=170, bg=self.colors["card_bg"],
+                                     highlightthickness=0)
+        self.pomo_canvas.pack(pady=4)
+        self.draw_circular_progress(self.pomo_canvas, self.pomo_time_left, self.pomo_total_seconds,
+                                    self.colors["ring_pomo"], f"{self.pomo_time_left//60:02d}:{self.pomo_time_left%60:02d}")
+
+        # Controls
+        ctrl_box = tk.Frame(pomo_card, bg=self.colors["card_bg"])
+        ctrl_box.pack(pady=6)
+
+        if self.pomo_state == "running":
+            btn_play = tk.Button(ctrl_box, text="⏸ Pause", font=("Segoe UI", 9, "bold"),
+                                 bg=self.colors["btn_bg"], fg=self.colors["text_primary"],
+                                 relief=tk.FLAT, bd=0, padx=12, pady=4, cursor="hand2",
+                                 command=self.pomo_pause)
+        else:
+            btn_play = tk.Button(ctrl_box, text="▶ Start", font=("Segoe UI", 9, "bold"),
+                                 bg=self.colors["accent"], fg="#ffffff",
+                                 relief=tk.FLAT, bd=0, padx=12, pady=4, cursor="hand2",
+                                 command=self.pomo_start)
+        btn_play.pack(side=tk.LEFT, padx=4)
+
+        btn_rst = tk.Button(ctrl_box, text="↺ Reset", font=("Segoe UI", 9),
+                            bg=self.colors["btn_bg"], fg=self.colors["text_secondary"],
+                            relief=tk.FLAT, bd=0, padx=10, pady=4, cursor="hand2",
+                            command=self.pomo_reset)
+        btn_rst.pack(side=tk.LEFT, padx=4)
+
+        # --- Card 2: 20-20-20 Eye Rest Reminder ---
+        eye_card = tk.Frame(top_row, bg=self.colors["card_bg"],
+                            highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=12)
+        eye_card.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(6, 0))
+
+        tk.Label(eye_card, text="20-20-20 EYE REST TIMER", font=("Segoe UI", 10, "bold"),
+                 fg=self.colors["ring_eye"], bg=self.colors["card_bg"]).pack(anchor="w")
+
+        eye_status_txt = "Active Auto-Reminder" if self.eye_enabled else "Reminder Disabled"
+        tk.Label(eye_card, text=eye_status_txt, font=("Segoe UI", 8),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(anchor="w", pady=(0, 6))
+
+        self.eye_canvas = tk.Canvas(eye_card, width=170, height=170, bg=self.colors["card_bg"],
+                                    highlightthickness=0)
+        self.eye_canvas.pack(pady=4)
+        total_eye_sec = self.eye_interval_min * 60
+        self.draw_circular_progress(self.eye_canvas, self.eye_time_left, total_eye_sec,
+                                    self.colors["ring_eye"], f"{self.eye_time_left//60:02d}:{self.eye_time_left%60:02d}")
+
+        # Controls & Interval Chips
+        eye_ctrl = tk.Frame(eye_card, bg=self.colors["card_bg"])
+        eye_ctrl.pack(pady=6)
+
+        btn_toggle_eye = tk.Button(eye_ctrl,
+                                   text="🟢 ON" if self.eye_enabled else "🔴 OFF",
+                                   font=("Segoe UI", 9, "bold"),
+                                   bg=self.colors["ring_eye"] if self.eye_enabled else self.colors["btn_bg"],
+                                   fg="#ffffff" if self.eye_enabled else self.colors["text_secondary"],
+                                   relief=tk.FLAT, bd=0, padx=10, pady=4, cursor="hand2",
+                                   command=self.toggle_eye_rest)
+        btn_toggle_eye.pack(side=tk.LEFT, padx=4)
+
+        for iv in [15, 20, 30]:
+            btn_iv = tk.Button(eye_ctrl, text=f"{iv}m", font=("Segoe UI", 8),
+                               bg=self.colors["accent"] if self.eye_interval_min == iv else self.colors["btn_bg"],
+                               fg="#ffffff" if self.eye_interval_min == iv else self.colors["text_primary"],
+                               relief=tk.FLAT, bd=0, padx=6, pady=4, cursor="hand2",
+                               command=lambda v=iv: self.set_eye_interval(v))
+            btn_iv.pack(side=tk.LEFT, padx=2)
+
+        # Bottom Section: Weekly Focus Analytics Bar Chart
+        stats_card = tk.Frame(container, bg=self.colors["card_bg"],
+                              highlightthickness=1, highlightbackground=self.colors["border"], padx=14, pady=10)
+        stats_card.pack(fill=tk.BOTH, expand=True)
+
+        self.render_weekly_focus_chart(stats_card)
+
+    def draw_circular_progress(self, canvas, remaining, total, color, text):
+        canvas.delete("all")
+        w, h = 170, 170
+        pad = 16
+        extent = -(360 * (remaining / max(total, 1)))
+
+        # Background track arc
+        canvas.create_arc(pad, pad, w - pad, h - pad, start=90, extent=-359.9,
+                          style="arc", outline=self.colors["ring_bg"], width=12)
+
+        # Active progress arc
+        if extent != 0:
+            canvas.create_arc(pad, pad, w - pad, h - pad, start=90, extent=extent,
+                              style="arc", outline=color, width=12)
+
+        # Center Text
+        canvas.create_text(w / 2, h / 2, text=text, font=("Segoe UI", 18, "bold"),
+                           fill=self.colors["text_primary"])
+
+    def render_weekly_focus_chart(self, parent):
+        tk.Label(parent, text="WEEKLY FOCUS ANALYTICS", font=("Segoe UI", 10, "bold"),
+                 fg=self.colors["accent_cyan"], bg=self.colors["card_bg"]).pack(anchor="w", pady=(0, 4))
+
+        # Calculate current week (Monday to Sunday)
+        today = datetime.date.today()
+        start_of_week = today - datetime.timedelta(days=today.weekday())  # Monday
+
+        days_data = []
+        total_sessions = 0
+        pomo_stats = self.data.get("pomo_stats", {})
+
+        for i in range(7):
+            d_obj = start_of_week + datetime.timedelta(days=i)
+            d_str = d_obj.strftime("%Y-%m-%d")
+            cnt = pomo_stats.get(d_str, 0)
+            days_data.append((d_obj.strftime("%a"), cnt, d_obj == today))
+            total_sessions += cnt
+
+        total_hours = round(total_sessions * 25 / 60, 1)
+
+        # Summary Subtitle
+        sub_txt = f"🔥 {total_sessions} Pomodoro Sessions Completed • {total_hours} Focus Hours This Week"
+        tk.Label(parent, text=sub_txt, font=("Segoe UI", 8),
+                 fg=self.colors["text_secondary"], bg=self.colors["card_bg"]).pack(anchor="w", pady=(0, 6))
+
+        # Canvas Bar Chart
+        c_w, c_h = 760, 95
+        chart_cv = tk.Canvas(parent, width=c_w, height=c_h, bg=self.colors["card_bg"], highlightthickness=0)
+        chart_cv.pack(fill=tk.X, expand=True)
+
+        max_val = max([cnt for _, cnt, _ in days_data] + [6])
+        bar_w = 46
+        gap = (c_w - (7 * bar_w)) / 8
+
+        for idx, (day_label, count, is_cur) in enumerate(days_data):
+            x1 = gap + idx * (bar_w + gap)
+            x2 = x1 + bar_w
+            bar_h = (count / max_val) * (c_h - 32)
+            y1 = (c_h - 22) - bar_h
+            y2 = c_h - 22
+
+            # Background bar pillar
+            chart_cv.create_rectangle(x1, 10, x2, c_h - 22, fill=self.colors["subcard_bg"], outline="")
+
+            # Filled bar
+            bar_color = self.colors["accent"] if is_cur else self.colors["ring_eye"]
+            if count > 0:
+                chart_cv.create_rectangle(x1, y1, x2, y2, fill=bar_color, outline="")
+
+            # Value label
+            chart_cv.create_text((x1 + x2) / 2, y1 - 7 if count > 0 else y2 - 7,
+                                 text=f"{count}", font=("Segoe UI", 7, "bold"),
+                                 fill=self.colors["text_primary"] if count > 0 else self.colors["text_secondary"])
+
+            # Day label
+            chart_cv.create_text((x1 + x2) / 2, c_h - 8, text=day_label,
+                                 font=("Segoe UI", 8, "bold" if is_cur else "normal"),
+                                 fill=self.colors["accent_cyan"] if is_cur else self.colors["text_secondary"])
+
+    # ==========================================
+    # POMODORO & EYE REST LOGIC
+    # ==========================================
+    def pomo_start(self):
+        self.pomo_state = "running"
+        self.pomo_last_tick = time.time()
+        if self.current_tab == "timers":
+            self.render_timers_view()
+
+    def pomo_pause(self):
+        self.pomo_state = "paused"
+        if self.current_tab == "timers":
+            self.render_timers_view()
+
+    def pomo_reset(self):
+        self.pomo_state = "stopped"
+        self.pomo_mode = "work"
+        self.pomo_total_seconds = 25 * 60
+        self.pomo_time_left = self.pomo_total_seconds
+        if self.current_tab == "timers":
+            self.render_timers_view()
+
+    def toggle_eye_rest(self):
+        self.eye_enabled = not self.eye_enabled
+        self.data["eye_enabled"] = self.eye_enabled
         self.save_data()
-        st_txt = self.t("eye_toggle_on") if self.eye_rest_enabled else self.t("eye_toggle_off")
-        st_bg = "#10b981" if self.eye_rest_enabled else "#64748b"
-        self.btn_eye_toggle.config(text=st_txt, bg=st_bg)
-        self.update_timer_rings()
+        if self.current_tab == "timers":
+            self.render_timers_view()
 
-    def set_eye_interval(self, mins):
-        self.eye_interval_min = mins
-        self.eye_rest_total_sec = mins * 60
-        self.eye_rest_seconds_left = mins * 60
+    def set_eye_interval(self, iv):
+        self.eye_interval_min = iv
+        self.eye_time_left = iv * 60
+        self.data["eye_interval"] = iv
         self.save_data()
-        self.render_content_view()
+        if self.current_tab == "timers":
+            self.render_timers_view()
 
-    def reset_eye_rest(self):
-        self.eye_rest_seconds_left = self.eye_interval_min * 60
-        self.update_timer_rings()
+    # ==========================================
+    # MINI FLOATING WIDGET MODE
+    # ==========================================
+    def toggle_mini_widget(self):
+        self.is_mini = not self.is_mini
+        if self.is_mini:
+            self.normal_geom = self.root.geometry()
+            self.root.geometry("300x100")
+            self.root.resizable(False, False)
+            self.root.attributes("-topmost", True)
+            self.build_mini_widget_gui()
+        else:
+            self.root.geometry(self.normal_geom or "1040x650")
+            self.root.resizable(True, True)
+            self.root.attributes("-topmost", False)
+            self.build_gui()
 
-    # =========================================================================
-    # VIEW 3: SETTINGS, DATA & UPDATES
-    # =========================================================================
-    def build_settings_view(self, parent):
-        th = THEMES[self.current_theme]
+    def build_mini_widget_gui(self):
+        for w in self.root.winfo_children():
+            w.destroy()
 
-        # 1. Preferences Card
-        pref_card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        pref_card.pack(fill="x", pady=(0, 10))
+        mini_frame = tk.Frame(self.root, bg=self.colors["sidebar_bg"], padx=10, pady=8)
+        mini_frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(pref_card, text=self.t("settings_heading"), font=("Segoe UI", 11, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 6))
+        top_b = tk.Frame(mini_frame, bg=self.colors["sidebar_bg"])
+        top_b.pack(fill=tk.X)
 
-        grid_p = tk.Frame(pref_card, bg=th["card_bg"])
-        grid_p.pack(fill="x", padx=16, pady=(0, 12))
+        self.mini_clock = tk.Label(top_b, text="--:--:--", font=("Segoe UI", 11, "bold"),
+                                   fg=self.colors["text_primary"], bg=self.colors["sidebar_bg"])
+        self.mini_clock.pack(side=tk.LEFT)
 
-        # Default Tone
-        tk.Label(grid_p, text=self.t("default_tone"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=0, column=0, sticky="w", pady=4)
-        self.var_def_tone = tk.StringVar(value=self.current_tone)
-        combo_def = ttk.Combobox(grid_p, textvariable=self.var_def_tone, values=list(TONES.keys()), state="readonly", font=("Segoe UI", 9), width=18)
-        combo_def.grid(row=0, column=1, sticky="w", padx=10, pady=4)
-        combo_def.bind("<<ComboboxSelected>>", lambda e: self.on_change_default_tone())
+        rst_btn = tk.Button(top_b, text="⛶ Expand", font=("Segoe UI", 8, "bold"),
+                            bg=self.colors["btn_bg"], fg=self.colors["accent_cyan"],
+                            relief=tk.FLAT, bd=0, padx=6, pady=1, cursor="hand2",
+                            command=self.toggle_mini_widget)
+        rst_btn.pack(side=tk.RIGHT)
 
-        btn_test_def = tk.Button(grid_p, text="🔊 " + self.t("btn_test_tone"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=8, cursor="hand2", command=lambda: play_audio_tone(self.var_def_tone.get()))
-        btn_test_def.grid(row=0, column=2, sticky="w", padx=4, pady=4)
+        # Status row
+        self.mini_status = tk.Label(mini_frame, text="🍅 Pomodoro: Ready • ⏰ Alarms Active",
+                                    font=("Segoe UI", 8), fg=self.colors["text_secondary"],
+                                    bg=self.colors["sidebar_bg"])
+        self.mini_status.pack(anchor="w", pady=(4, 0))
 
-        # Language
-        tk.Label(grid_p, text=self.t("app_language"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=1, column=0, sticky="w", pady=6)
-        lang_box = tk.Frame(grid_p, bg=th["card_bg"])
-        lang_box.grid(row=1, column=1, sticky="w", padx=10, pady=6)
-
-        btn_l_id = tk.Button(lang_box, text="Bahasa Indonesia", font=("Segoe UI", 8, "bold" if self.current_lang == "id" else "normal"), bg=th["accent"] if self.current_lang == "id" else th["btn_bg"], fg="white" if self.current_lang == "id" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_language("id"))
-        btn_l_id.pack(side="left", padx=(0, 4))
-
-        btn_l_en = tk.Button(lang_box, text="English", font=("Segoe UI", 8, "bold" if self.current_lang == "en" else "normal"), bg=th["accent"] if self.current_lang == "en" else th["btn_bg"], fg="white" if self.current_lang == "en" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_language("en"))
-        btn_l_en.pack(side="left")
-
-        # Theme
-        tk.Label(grid_p, text=self.t("app_theme"), font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).grid(row=2, column=0, sticky="w", pady=6)
-        thm_box = tk.Frame(grid_p, bg=th["card_bg"])
-        thm_box.grid(row=2, column=1, sticky="w", padx=10, pady=6)
-
-        btn_th_dark = tk.Button(thm_box, text=self.t("theme_dark"), font=("Segoe UI", 8, "bold" if self.current_theme == "dark" else "normal"), bg=th["accent"] if self.current_theme == "dark" else th["btn_bg"], fg="white" if self.current_theme == "dark" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_theme("dark"))
-        btn_th_dark.pack(side="left", padx=(0, 4))
-
-        btn_th_light = tk.Button(thm_box, text=self.t("theme_light"), font=("Segoe UI", 8, "bold" if self.current_theme == "light" else "normal"), bg=th["accent"] if self.current_theme == "light" else th["btn_bg"], fg="white" if self.current_theme == "light" else th["btn_fg"], relief="flat", padx=8, pady=2, cursor="hand2", command=lambda: self.set_theme("light"))
-        btn_th_light.pack(side="left")
-
-        # 2. Local Storage Card
-        card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        card.pack(fill="x", pady=(0, 10))
-
-        tk.Label(card, text=self.t("storage_heading"), font=("Segoe UI", 11, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 2))
-        tk.Label(card, text=f"File: {DATA_FILE}", font=("Consolas", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(0, 4))
-        tk.Label(card, text=self.t("storage_info"), font=("Segoe UI", 8), fg=th["text_primary"], bg=th["card_bg"], justify="left").pack(anchor="w", padx=16, pady=2)
-
-        btn_box = tk.Frame(card, bg=th["card_bg"])
-        btn_box.pack(anchor="w", padx=16, pady=(6, 12))
-
-        btn_open = tk.Button(btn_box, text=self.t("btn_open_folder"), font=("Segoe UI", 8, "bold"), bg=th["accent"], fg="white", relief="flat", padx=10, pady=4, cursor="hand2", command=lambda: os.system(f'explorer /select,"{DATA_FILE}"'))
-        btn_open.pack(side="left", padx=(0, 6))
-
-        btn_save = tk.Button(btn_box, text=self.t("btn_save_json"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=4, cursor="hand2", command=self.save_data_with_feedback)
-        btn_save.pack(side="left")
-
-        # 3. Update & Version Sync Card
-        up_card = tk.Frame(parent, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        up_card.pack(fill="both", expand=True)
-
-        tk.Label(up_card, text=self.t("update_heading"), font=("Segoe UI", 11, "bold"), fg="#10b981", bg=th["card_bg"]).pack(anchor="w", padx=16, pady=(12, 2))
-        
-        up_meta = tk.Frame(up_card, bg=th["card_bg"])
-        up_meta.pack(fill="x", padx=16, pady=4)
-        
-        tk.Label(up_meta, text=f"{self.t('current_ver')} v{APP_VERSION}", font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["card_bg"]).pack(side="left")
-        self.lbl_update_status = tk.Label(up_meta, text=self.t("status_ready"), font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"])
-        self.lbl_update_status.pack(side="left", padx=12)
-
-        up_btn_box = tk.Frame(up_card, bg=th["card_bg"])
-        up_btn_box.pack(anchor="w", padx=16, pady=(6, 12))
-
-        self.btn_check_update = tk.Button(up_btn_box, text=self.t("btn_check_update"), font=("Segoe UI", 8, "bold"), bg="#059669", fg="white", activebackground="#047857", activeforeground="white", relief="flat", padx=12, pady=5, cursor="hand2", command=lambda: self.check_for_updates_async(silent=False))
-        self.btn_check_update.pack(side="left", padx=(0, 6))
-
-        btn_repo = tk.Button(up_btn_box, text=self.t("btn_open_repo"), font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=lambda: webbrowser.open(GITHUB_REPO_URL))
-        btn_repo.pack(side="left")
-
-    def on_change_default_tone(self):
-        self.current_tone = self.var_def_tone.get()
-        self.save_data()
-
-    def set_language(self, lang):
-        self.current_lang = lang
-        self.save_data()
-        self.rebuild_ui()
-
-    def set_theme(self, th_name):
-        self.current_theme = th_name
-        self.save_data()
-        self.rebuild_ui()
-
-    def save_data_with_feedback(self):
-        self.save_data()
-        messagebox.showinfo("ZZZleep", self.t("saved_ok"))
-
-    def check_for_updates_async(self, silent=True):
-        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
-            self.lbl_update_status.config(text=self.t("status_checking"), fg="#38bdf8")
-
-        def _worker():
-            try:
-                req = urllib.request.Request(
-                    UPDATE_MANIFEST_URL,
-                    headers={"User-Agent": f"ZZZleep-Desktop/{APP_VERSION}"}
-                )
-                with urllib.request.urlopen(req, timeout=6) as resp:
-                    if resp.status == 200:
-                        raw = resp.read().decode('utf-8')
-                        data = json.loads(raw)
-                        remote_ver = data.get("version", "1.1.0")
-                        
-                        if parse_version(remote_ver) > parse_version(APP_VERSION):
-                            self.root.after(0, lambda: self.on_update_found(data))
-                        else:
-                            self.root.after(0, lambda: self.on_update_up_to_date(remote_ver, silent))
-                        return
-            except Exception as e:
-                self.root.after(0, lambda: self.on_update_error(str(e), silent))
-
-        t = threading.Thread(target=_worker, daemon=True)
-        t.start()
-
-    def on_update_found(self, data):
-        new_ver = data.get("version", "1.1.0")
-        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
-            self.lbl_update_status.config(text=f"{self.t('status_new_avail')} (v{new_ver})", fg="#10b981")
-        self.show_update_dialog(data)
-
-    def on_update_up_to_date(self, remote_ver, silent):
-        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
-            self.lbl_update_status.config(text=self.t("status_latest"), fg="#10b981")
-        if not silent:
-            messagebox.showinfo("Pembaruan Versi", self.t("up_to_date_msg"))
-
-    def on_update_error(self, err_msg, silent):
-        if hasattr(self, 'lbl_update_status') and self.lbl_update_status.winfo_exists():
-            self.lbl_update_status.config(text=self.t("status_offline"), fg="#94a3b8")
-        if not silent:
-            messagebox.showwarning("Koneksi Pembaruan", self.t("conn_err_msg"))
-
-    def show_update_dialog(self, data):
-        new_ver = data.get("version", "1.1.0")
-        rel_date = data.get("release_date", "")
-        changelog = data.get("changelog", [])
-        dl_url = data.get("download_url", DIRECT_EXE_URL)
-
-        th = THEMES[self.current_theme]
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Pembaruan ZZZleep Tersedia" if self.current_lang == "id" else "ZZZleep Update Available")
-        dialog.geometry("540x480")
-        dialog.minsize(500, 440)
-        dialog.configure(bg=th["bg"])
-        dialog.transient(self.root)
-        dialog.grab_set()
-
-        # Center dialog
-        dialog.update_idletasks()
-        rx, ry = self.root.winfo_x(), self.root.winfo_y()
-        rw, rh = self.root.winfo_width(), self.root.winfo_height()
-        dx = rx + (rw - 540) // 2
-        dy = ry + (rh - 480) // 2
-        dialog.geometry(f"+{max(0, dx)}+{max(0, dy)}")
-
-        hdr = tk.Frame(dialog, bg=th["card_bg"], highlightthickness=1, highlightbackground=th["border"])
-        hdr.pack(fill="x")
-
-        tk.Label(hdr, text="🚀", font=("Segoe UI Emoji", 20), bg=th["card_bg"]).pack(side="left", padx=(18, 8), pady=14)
-        h_info = tk.Frame(hdr, bg=th["card_bg"])
-        h_info.pack(side="left", fill="y", pady=12)
-
-        title_text = "Pembaruan Baru Tersedia!" if self.current_lang == "id" else "New Version Available!"
-        tk.Label(h_info, text=title_text, font=("Segoe UI", 12, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(anchor="w")
-        sub_text = f"Versi v{new_ver} telah dirilis ({rel_date})" if self.current_lang == "id" else f"Version v{new_ver} released ({rel_date})"
-        tk.Label(h_info, text=sub_text, font=("Segoe UI", 8), fg=th["text_secondary"], bg=th["card_bg"]).pack(anchor="w")
-
-        body = tk.Frame(dialog, bg=th["bg"])
-        body.pack(fill="both", expand=True, padx=18, pady=12)
-
-        v_box = tk.Frame(body, bg=th["card_bg"], padx=12, pady=8, highlightthickness=1, highlightbackground=th["border"])
-        v_box.pack(fill="x", pady=(0, 10))
-
-        cur_lbl = f"Versi Anda: v{APP_VERSION}" if self.current_lang == "id" else f"Your Version: v{APP_VERSION}"
-        new_lbl = f"Versi Terbaru: v{new_ver}" if self.current_lang == "id" else f"Latest Version: v{new_ver}"
-        tk.Label(v_box, text=cur_lbl, font=("Segoe UI", 9, "bold"), fg=th["text_secondary"], bg=th["card_bg"]).pack(side="left")
-        tk.Label(v_box, text="  ➔  ", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left")
-        tk.Label(v_box, text=new_lbl, font=("Segoe UI", 9, "bold"), fg="#10b981", bg=th["card_bg"]).pack(side="left")
-
-        cl_head = "Apa saja yang baru pada versi ini:" if self.current_lang == "id" else "What's new in this update:"
-        tk.Label(body, text=cl_head, font=("Segoe UI", 9, "bold"), fg=th["text_primary"], bg=th["bg"]).pack(anchor="w", pady=(0, 4))
-
-        cl_box = tk.Frame(body, bg=th["card_bg"], padx=12, pady=8, highlightthickness=1, highlightbackground=th["border"])
-        cl_box.pack(fill="both", expand=True)
-
-        for item in changelog:
-            row = tk.Frame(cl_box, bg=th["card_bg"])
-            row.pack(fill="x", anchor="w", pady=2)
-            tk.Label(row, text="•", font=("Segoe UI", 9, "bold"), fg=th["accent_cyan"], bg=th["card_bg"]).pack(side="left", anchor="n", padx=(0, 6))
-            tk.Label(row, text=item, font=("Segoe UI", 8), fg=th["text_primary"], bg=th["card_bg"], wraplength=440, justify="left").pack(side="left", fill="x", expand=True)
-
-        ftr = tk.Frame(dialog, bg=th["card_bg"], padx=14, pady=12, highlightthickness=1, highlightbackground=th["border"])
-        ftr.pack(fill="x", side="bottom")
-
-        def _do_update():
-            webbrowser.open(dl_url)
-            dialog.destroy()
-
-        btn_up_txt = "⬇ Unduh Pembaruan" if self.current_lang == "id" else "⬇ Download Update"
-        btn_update = tk.Button(ftr, text=btn_up_txt, font=("Segoe UI", 9, "bold"), bg=th["accent"], fg="white", activebackground=th["accent_hover"], activeforeground="white", relief="flat", padx=14, pady=5, cursor="hand2", command=_do_update)
-        btn_update.pack(side="right", padx=(6, 0))
-
-        btn_gh_txt = "🌐 GitHub"
-        btn_gh = tk.Button(ftr, text=btn_gh_txt, font=("Segoe UI", 8), bg=th["btn_bg"], fg=th["btn_fg"], relief="flat", padx=10, pady=5, cursor="hand2", command=lambda: webbrowser.open(GITHUB_REPO_URL))
-        btn_gh.pack(side="right", padx=4)
-
-        btn_can_txt = "Nanti Saja" if self.current_lang == "id" else "Later"
-        btn_cancel = tk.Button(ftr, text=btn_can_txt, font=("Segoe UI", 8), bg=th["card_bg"], fg=th["text_secondary"], relief="flat", padx=10, pady=5, cursor="hand2", command=dialog.destroy)
-        btn_cancel.pack(side="left")
-
-    def start_background_timer(self):
-        def _loop():
-            last_min = ""
+    # ==========================================
+    # BACKGROUND THREADS & TIMERS
+    # ==========================================
+    def start_clock_thread(self):
+        def _clock():
             while True:
                 now = datetime.datetime.now()
-                t_str = now.strftime("%H:%M:%S")
-                hm_str = now.strftime("%H:%M")
-                
-                # Bilingual Date Formatter
-                if self.current_lang == "id":
-                    days_id = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
-                    months_id = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-                    d_str = f"{days_id[now.weekday()]}, {now.day} {months_id[now.month-1]} {now.year}"
-                else:
-                    d_str = now.strftime("%A, %d %B %Y")
+                c_str = now.strftime("%H:%M:%S")
+                d_str = now.strftime("%A, %d %b %Y")
 
                 try:
-                    if hasattr(self, 'clock_lbl') and self.clock_lbl.winfo_exists():
-                        self.clock_lbl.config(text=t_str)
-                    if hasattr(self, 'date_lbl') and self.date_lbl.winfo_exists():
-                        self.date_lbl.config(text=d_str)
-                except Exception:
-                    pass
-
-                # Alarm Trigger
-                if hm_str != last_min:
-                    last_min = hm_str
-                    day_idx = (now.weekday() + 1) % 7
-                    for a in self.data.get("alarms", []):
-                        if a.get("enabled", True) and a.get("time") == hm_str:
-                            days = a.get("days", [0, 1, 2, 3, 4, 5, 6])
-                            if day_idx in days:
-                                play_audio_tone(a.get("tone", self.current_tone))
-                                try:
-                                    self.root.deiconify()
-                                    self.root.lift()
-                                    self.root.focus_force()
-                                except Exception:
-                                    pass
-
-                # Pomodoro Tick
-                if self.pomodoro_is_running and self.pomodoro_seconds_left > 0:
-                    self.pomodoro_seconds_left -= 1
-                    if self.pomodoro_seconds_left == 0:
-                        self.pomodoro_is_break = not self.pomodoro_is_break
-                        self.pomodoro_total_sec = (5 * 60) if self.pomodoro_is_break else (25 * 60)
-                        self.pomodoro_seconds_left = self.pomodoro_total_sec
-                        play_audio_tone(self.current_tone)
-                        try:
-                            st_lbl = self.t("pomo_state_break") if self.pomodoro_is_break else self.t("pomo_state_work")
-                            if hasattr(self, 'lbl_pomo_state') and self.lbl_pomo_state.winfo_exists():
-                                self.lbl_pomo_state.config(text=st_lbl)
-                        except Exception:
-                            pass
-
-                # Eye Rest Tick
-                if self.eye_rest_enabled and self.eye_rest_seconds_left > 0:
-                    self.eye_rest_seconds_left -= 1
-                    if self.eye_rest_seconds_left == 0:
-                        self.eye_rest_seconds_left = self.eye_interval_min * 60
-                        play_audio_tone("bell")
-                        try:
-                            self.root.deiconify()
-                            self.root.lift()
-                        except Exception:
-                            pass
-
-                # Update Timer Canvas Rings if on timers tab
-                try:
-                    if self.current_nav == "timers":
-                        self.root.after(0, self.update_timer_rings)
+                    if hasattr(self, "clock_lbl") and self.clock_lbl.winfo_exists():
+                        self.clock_lbl.configure(text=c_str)
+                    if hasattr(self, "date_lbl") and self.date_lbl.winfo_exists():
+                        self.date_lbl.configure(text=d_str)
+                    if hasattr(self, "mini_clock") and self.mini_clock.winfo_exists():
+                        self.mini_clock.configure(text=c_str)
                 except Exception:
                     pass
 
                 time.sleep(1)
 
-        t = threading.Thread(target=_loop, daemon=True)
-        t.start()
+        threading.Thread(target=_clock, daemon=True).start()
+
+    def start_alarm_checker(self):
+        def _check():
+            last_triggered_min = ""
+            while True:
+                now = datetime.datetime.now()
+                cur_min = now.strftime("%H:%M")
+                day_name = now.strftime("%a")  # "Mon", "Tue"...
+                today_obj = now.date()
+
+                if cur_min != last_triggered_min and now.second == 0:
+                    for al in self.data.get("alarms", []):
+                        if al.get("enabled") and al.get("time") == cur_min:
+                            repeat = al.get("repeat", [])
+                            if day_name in repeat:
+                                # Check if skip holiday is active and today is holiday
+                                if al.get("skip_holiday"):
+                                    is_hol, _ = self.is_holiday(today_obj)
+                                    if is_hol:
+                                        print(f"Skipping alarm '{al.get('label')}' due to holiday.")
+                                        continue
+
+                                last_triggered_min = cur_min
+                                self.trigger_alarm(al)
+                time.sleep(0.5)
+
+        threading.Thread(target=_check, daemon=True).start()
+
+    def trigger_alarm(self, alarm_item):
+        label = alarm_item.get("label", "Alarm")
+        tone = alarm_item.get("tone", "gentle")
+        has_math = alarm_item.get("math_challenge", False)
+
+        if has_math:
+            self.root.after(0, lambda: self.show_math_challenge_alarm(label, tone))
+        else:
+            self.play_tone(tone)
+            self.root.after(0, lambda: messagebox.showinfo("⏰ ZZZleep Alarm", f"🔔 Alarm Triggered!\n\n{label} ({alarm_item.get('time')})"))
+
+    def show_math_challenge_alarm(self, label, tone):
+        num1 = random.randint(14, 58)
+        num2 = random.randint(17, 49)
+        expected = num1 + num2
+
+        dlg = tk.Toplevel(self.root)
+        dlg.title("🧠 Math Challenge Alarm")
+        dlg.geometry("380x210")
+        dlg.configure(bg=self.colors["card_bg"])
+        dlg.attributes("-topmost", True)
+        dlg.grab_set()
+
+        # Start repeating sound until solved
+        self.math_alarm_beeping = True
+
+        def _loop_beep():
+            while self.math_alarm_beeping:
+                self.play_tone(tone)
+                time.sleep(2.0)
+
+        threading.Thread(target=_loop_beep, daemon=True).start()
+
+        tk.Label(dlg, text="⏰ WAKE UP & SOLVE TO DISMISS!", font=("Segoe UI", 10, "bold"),
+                 fg=self.colors["ring_pomo"], bg=self.colors["card_bg"]).pack(pady=(14, 4))
+
+        tk.Label(dlg, text=f"Alarm: {label}", font=("Segoe UI", 9),
+                 fg=self.colors["text_primary"], bg=self.colors["card_bg"]).pack()
+
+        q_lbl = tk.Label(dlg, text=f"{num1} + {num2} = ?", font=("Segoe UI", 16, "bold"),
+                         fg=self.colors["accent_cyan"], bg=self.colors["card_bg"])
+        q_lbl.pack(pady=8)
+
+        ans_entry = tk.Entry(dlg, font=("Segoe UI", 12, "bold"), justify=tk.CENTER,
+                             bg=self.colors["entry_bg"], fg=self.colors["entry_fg"],
+                             bd=1, relief=tk.SOLID)
+        ans_entry.pack(padx=20, pady=4)
+        ans_entry.focus_set()
+
+        res_lbl = tk.Label(dlg, text="", font=("Segoe UI", 8),
+                           fg=self.colors["ring_pomo"], bg=self.colors["card_bg"])
+        res_lbl.pack()
+
+        def verify():
+            try:
+                val = int(ans_entry.get().strip())
+                if val == expected:
+                    self.math_alarm_beeping = False
+                    dlg.destroy()
+                    messagebox.showinfo("Alarm Dismissed", "Great job! Have a productive day ahead!")
+                else:
+                    res_lbl.configure(text=f"Incorrect answer ({val}). Try again!")
+                    ans_entry.delete(0, "end")
+            except ValueError:
+                res_lbl.configure(text="Please enter a valid number.")
+
+        btn_sub = tk.Button(dlg, text="Submit & Dismiss", font=("Segoe UI", 9, "bold"),
+                            bg=self.colors["ring_eye"], fg="#ffffff", relief=tk.FLAT, bd=0, padx=14, pady=4,
+                            command=verify)
+        btn_sub.pack(pady=(4, 10))
+
+        dlg.protocol("WM_DELETE_WINDOW", lambda: None)  # Prevent closing without solving
+
+    def start_eye_rest_checker(self):
+        def _eye():
+            while True:
+                time.sleep(1)
+                if self.eye_enabled:
+                    self.eye_time_left -= 1
+                    if self.eye_time_left <= 0:
+                        self.eye_time_left = self.eye_interval_min * 60
+                        self.play_tone("zen")
+                        self.root.after(0, lambda: messagebox.showinfo(
+                            "👀 20-20-20 Eye Rest Reminder",
+                            "Look at an object 20 feet (6 meters) away for 20 seconds to relax your eyes."
+                        ))
+
+                    if hasattr(self, "eye_canvas") and self.eye_canvas.winfo_exists() and self.current_tab == "timers":
+                        total_eye_sec = self.eye_interval_min * 60
+                        self.draw_circular_progress(self.eye_canvas, self.eye_time_left, total_eye_sec,
+                                                    self.colors["ring_eye"],
+                                                    f"{self.eye_time_left//60:02d}:{self.eye_time_left%60:02d}")
+
+        threading.Thread(target=_eye, daemon=True).start()
+
+    def start_pomo_thread(self):
+        def _pomo():
+            while True:
+                time.sleep(0.5)
+                if self.pomo_state == "running":
+                    now = time.time()
+                    elapsed = now - self.pomo_last_tick
+                    if elapsed >= 1.0:
+                        self.pomo_last_tick = now
+                        self.pomo_time_left -= int(elapsed)
+
+                        if self.pomo_time_left <= 0:
+                            if self.pomo_mode == "work":
+                                # Log completed session to daily stats
+                                today_str = datetime.date.today().strftime("%Y-%m-%d")
+                                if "pomo_stats" not in self.data:
+                                    self.data["pomo_stats"] = {}
+                                self.data["pomo_stats"][today_str] = self.data["pomo_stats"].get(today_str, 0) + 1
+                                self.save_data()
+
+                                self.pomo_mode = "break"
+                                self.pomo_total_seconds = 5 * 60
+                                self.pomo_time_left = self.pomo_total_seconds
+                                self.play_tone("chime")
+                                self.root.after(0, lambda: messagebox.showinfo("🍅 Pomodoro", "Focus Session Complete! Take a 5-minute break."))
+                            else:
+                                self.pomo_mode = "work"
+                                self.pomo_total_seconds = 25 * 60
+                                self.pomo_time_left = self.pomo_total_seconds
+                                self.play_tone("gentle")
+                                self.root.after(0, lambda: messagebox.showinfo("🍅 Pomodoro", "Break Over! Ready for the next focus session?"))
+
+                        # Update UI
+                        if hasattr(self, "pomo_canvas") and self.pomo_canvas.winfo_exists() and self.current_tab == "timers":
+                            self.draw_circular_progress(self.pomo_canvas, self.pomo_time_left, self.pomo_total_seconds,
+                                                        self.colors["ring_pomo"],
+                                                        f"{self.pomo_time_left//60:02d}:{self.pomo_time_left%60:02d}")
+
+                        if hasattr(self, "mini_status") and self.mini_status.winfo_exists() and self.is_mini:
+                            m_txt = f"🍅 {self.pomo_mode.upper()} {self.pomo_time_left//60:02d}:{self.pomo_time_left%60:02d}"
+                            self.mini_status.configure(text=m_txt)
+
+        threading.Thread(target=_pomo, daemon=True).start()
+
+    # ==========================================
+    # AUTO-UPDATE SYNCHRONIZATION
+    # ==========================================
+    def silent_check_update(self):
+        try:
+            req = urllib.request.Request(UPDATE_MANIFEST_URL, headers={"User-Agent": "ZZZleep-Updater"})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    latest_ver = data.get("version", "")
+                    if latest_ver and latest_ver != APP_VERSION:
+                        # Popup update dialog
+                        self.root.after(0, lambda: self.show_update_popup(data))
+        except Exception:
+            pass
+
+    def show_update_popup(self, manifest_data):
+        new_ver = manifest_data.get("version", "Latest")
+        changelog = manifest_data.get("changelog", [])
+        ch_text = "\n• ".join(changelog) if changelog else "Performance optimizations and new features."
+
+        msg = (
+            f"A new version of ZZZleep is available!\n\n"
+            f"Current Version: v{APP_VERSION}\n"
+            f"Latest Version: v{new_ver}\n\n"
+            f"Changelog:\n• {ch_text}\n\n"
+            f"Would you like to download the updated binary now?"
+        )
+
+        if messagebox.askyesno("Update Available", msg):
+            download_url = manifest_data.get("download_url", DIRECT_EXE_URL)
+            webbrowser.open(download_url)
 
 
+# ==========================================
+# MAIN ENTRY POINT
+# ==========================================
 def main():
     root = tk.Tk()
-    app = ZzzleepDesktopApp(root)
+    app = ZZZleepApp(root)
     root.mainloop()
 
 

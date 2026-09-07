@@ -1,13 +1,14 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "release_date": "2026-09-07",
-  "title": "Pembaruan ZZZleep v1.1.0",
+  "title": "ZZZleep v1.2.0 — Calendar Holidays, Focus Analytics & Smart Alarms",
   "changelog": [
-    "5 Pilihan nada suara alarm audio sintetis (Gentle, Retro, Bell, Chime, Zen)",
-    "Kontrol sakelar ON/OFF pengingat istirahat mata 20-20-20 dengan kustomisasi interval (15m, 20m, 30m, 45m)",
-    "Dukungan dwibahasa penuh (Bahasa Indonesia & English) dengan tombol switch instan",
-    "Pilihan tema antarmuka Gelap (Dark Mode) & Terang (Light Mode)",
-    "Sistem sinkronisasi versi dan unduhan binary mandiri bin/ZZZleep.exe langsung"
+    "Indonesian National Public Holidays & Joint Leaves (2025-2027) with Long Weekend detection",
+    "Smart Alarm options: Skip on Public Holidays & Math Challenge to Dismiss Alarm",
+    "Interactive calendar with daily memo notes and D-Day target countdown",
+    "Weekly Focus Analytics with Canvas 7-day session bar chart",
+    "Mini Floating Widget Mode (Always-on-top compact overlay)",
+    "Streamlined 2-tab English-primary navigation with live tone testing and dark/light themes"
   ],
   "download_url": "https://github.com/InfiniteNull/ZZZleep/raw/main/bin/ZZZleep.exe",
   "github_repo_url": "https://github.com/InfiniteNull/ZZZleep"
