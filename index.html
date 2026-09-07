@@ -10,7 +10,7 @@
   <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -31,10 +31,10 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col justify-between selection:bg-sky-500 selection:text-white font-sans">
 
   <!-- TOP HEADER -->
-  <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <div class="flex items-center gap-3">
@@ -49,7 +49,7 @@
             </span>
           </div>
           <p class="text-[11px] text-slate-400 font-mono">
-            Offline Calendar • Audio Alarm • Pomodoro • Windows Native
+            Desktop Calendar • Audio Alarm • Pomodoro • Windows Native
           </p>
         </div>
       </div>
@@ -70,19 +70,19 @@
   </header>
 
   <!-- MAIN SHOWCASE CONTENT -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
 
-    <!-- Hero Showcase Section -->
-    <div class="text-center max-w-3xl mx-auto space-y-4">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-sky-950/60 text-sky-300 border border-sky-800">
-        <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
-        <span>Aplikasi Desktop Native Windows (Python &amp; Tkinter GUI)</span>
+    <!-- Header Section -->
+    <div class="space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-slate-900 text-slate-300 border border-slate-800">
+        <i data-lucide="terminal" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span>Aplikasi Desktop Native Windows (Python &amp; Tkinter)</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
         ZZZleep Desktop Application
       </h1>
-      <p class="text-sm sm:text-base text-slate-400 leading-relaxed">
-        Aplikasi kalender offline, alarm audio sintetis, timer Pomodoro 25/5, dan pengingat istirahat layar (aturan 20-20-20) untuk laptop dan PC Windows. Berjalan secara lokal tanpa ketergantungan file audio eksternal dan dapat dikompilasi menjadi berkas <code class="text-sky-300 font-mono">.exe</code> mandiri.
+      <p class="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-3xl">
+        Aplikasi manajemen waktu offline untuk laptop dan PC Windows: alarm audio sintetis (winsound), timer Pomodoro 25/5, pengingat istirahat mata 20-20-20, dan penyimpanan data lokal JSON. Tidak memerlukan file audio eksternal dan dapat dikompilasi menjadi file <code class="text-sky-300 font-mono">.exe</code> mandiri via PyInstaller.
       </p>
     </div>
 
@@ -90,87 +90,81 @@
     <div class="space-y-4">
       <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-800 pb-3">
         <div class="flex items-center gap-2">
-          <button id="btnTab1" onclick="switchScreenshot(1)" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white flex items-center gap-2 transition shadow-sm">
-            <i data-lucide="alarm-clock" class="w-4 h-4"></i>
-            <span>1. Dashboard Alarm &amp; Jadwal</span>
+          <button id="btnTab1" onclick="switchScreenshot(1)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white flex items-center gap-1.5 transition shadow-sm">
+            <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i>
+            <span>1. Alarm &amp; Jadwal</span>
           </button>
-          <button id="btnTab2" onclick="switchScreenshot(2)" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2 border border-slate-700 transition">
-            <i data-lucide="timer" class="w-4 h-4"></i>
-            <span>2. Pomodoro &amp; Istirahat Layar (20-20-20)</span>
+          <button id="btnTab2" onclick="switchScreenshot(2)" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white flex items-center gap-1.5 border border-slate-800 transition">
+            <i data-lucide="timer" class="w-3.5 h-3.5"></i>
+            <span>2. Pomodoro &amp; Istirahat Layar</span>
+          </button>
+          <button id="btnTab3" onclick="switchScreenshot(3)" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white flex items-center gap-1.5 border border-slate-800 transition">
+            <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
+            <span>3. Data JSON &amp; Backup</span>
           </button>
         </div>
-        <span class="text-xs font-mono text-slate-500">Tampilan Asli Aplikasi Desktop (100% Native Tkinter)</span>
+        <span class="text-[11px] font-mono text-slate-500">Tangkapan Layar Asli Aplikasi Desktop (Tkinter GUI)</span>
       </div>
 
       <!-- Image Display Frame -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-2 sm:p-4 shadow-2xl overflow-hidden">
-        <img id="screenshotImg" src="assets/desktop_preview.png" alt="ZZZleep Desktop Preview" class="w-full h-auto rounded-xl shadow-lg border border-slate-800 transition duration-300" />
+      <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-2 shadow-xl overflow-hidden flex justify-center">
+        <img id="screenshotImg" src="assets/desktop_preview.png" alt="ZZZleep Desktop Preview" class="max-w-full h-auto rounded-lg border border-slate-800" />
       </div>
     </div>
 
-    <!-- Core Features Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+    <!-- Technical Specs & Guide -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
       
-      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-sky-950 text-sky-400 flex items-center justify-center border border-sky-800">
-          <i data-lucide="volume-2" class="w-5 h-5"></i>
-        </div>
-        <h3 class="font-bold text-white text-base">Audio Alarm Sintetis</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Menghasilkan nada alarm secara langsung melalui modul <code class="text-sky-300 font-mono">winsound.Beep</code> pada background thread tanpa membutuhkan file audio eksternal (<code class="text-slate-300 font-mono">.mp3/.wav</code>).
-        </p>
-      </div>
-
-      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center border border-emerald-800">
-          <i data-lucide="eye" class="w-5 h-5"></i>
-        </div>
-        <h3 class="font-bold text-white text-base">Aturan Istirahat Mata 20-20-20</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Timer otomatis setiap 20 menit menatap layar untuk mengingatkan jeda 20 detik melihat objek sejauh 6 meter (20 kaki) guna mengurangi kelelahan mata digital.
-        </p>
-      </div>
-
-      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-purple-950 text-purple-400 flex items-center justify-center border border-purple-800">
-          <i data-lucide="hard-drive" class="w-5 h-5"></i>
-        </div>
-        <h3 class="font-bold text-white text-base">Penyimpanan Lokal JSON</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Seluruh jadwal dan preferensi alarm tersimpan di <code class="text-purple-300 font-mono">~/.zzzleep_desktop_data.json</code> secara otomatis dan dapat dicadangkan kapan saja.
-        </p>
-      </div>
-
-    </div>
-
-    <!-- Quick Run & Build Guide -->
-    <div class="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
-      <div class="space-y-1">
-        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-          <i data-lucide="terminal" class="w-5 h-5 text-sky-400"></i>
-          <span>Cara Menjalankan &amp; Kompilasi (.exe)</span>
+      <!-- Left: Fitur Teknis -->
+      <div class="p-6 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-4 h-4 text-sky-400"></i>
+          <span>Spesifikasi &amp; Fitur Teknis</span>
         </h2>
-        <p class="text-xs sm:text-sm text-slate-400">
-          Jalankan langsung melalui Python atau buat file executable mandiri:
-        </p>
+        <ul class="text-xs text-slate-400 space-y-2 leading-relaxed">
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 font-bold">•</span>
+            <span><strong>Audio Sintetis:</strong> Menggunakan modul <code class="text-slate-300 font-mono">winsound.Beep</code> pada background thread tanpa ketergantungan file suara eksternal (<code class="text-slate-300 font-mono">.mp3/.wav</code>).</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 font-bold">•</span>
+            <span><strong>Pengingat Layar 20-20-20:</strong> Interval timer 20 menit untuk jeda 20 detik melihat objek sejauh 6 meter guna mencegah kelelahan mata.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 font-bold">•</span>
+            <span><strong>Timer Pomodoro (25/5):</strong> Siklus fokus kerja dan jeda istirahat dengan notifikasi suara.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 font-bold">•</span>
+            <span><strong>Penyimpanan Lokal:</strong> Berkas data disimpan di <code class="text-slate-300 font-mono">~/.zzzleep_desktop_data.json</code>.</span>
+          </li>
+        </ul>
       </div>
 
-      <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-2 text-slate-300 overflow-x-auto">
-        <div class="text-slate-500"># 1. Clone repositori &amp; jalankan aplikasi langsung</div>
-        <div class="text-sky-300">git clone https://github.com/InfiniteNull/ZZZleep.git</div>
-        <div class="text-sky-300">cd ZZZleep</div>
-        <div class="text-emerald-400">python desktop/app.py</div>
-        <div class="text-slate-500 pt-2"># 2. Kompilasi menjadi file ZZZleep.exe mandiri</div>
-        <div class="text-sky-300">pip install -r requirements.txt</div>
-        <div class="text-emerald-400">python desktop/build_exe.py</div>
+      <!-- Right: Build .exe Instructions -->
+      <div class="p-6 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+          <span>Cara Menjalankan &amp; Build .EXE</span>
+        </h2>
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800/80 font-mono text-[11px] space-y-1.5 text-slate-300 overflow-x-auto">
+          <div class="text-slate-500"># Jalankan langsung dengan Python:</div>
+          <div class="text-sky-300">git clone https://github.com/InfiniteNull/ZZZleep.git</div>
+          <div class="text-sky-300">cd ZZZleep</div>
+          <div class="text-emerald-400">python desktop/app.py</div>
+          <div class="text-slate-500 pt-1"># Kompilasi menjadi ZZZleep.exe:</div>
+          <div class="text-sky-300">pip install -r requirements.txt</div>
+          <div class="text-emerald-400">python desktop/build_exe.py</div>
+        </div>
       </div>
+
     </div>
 
   </main>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
-    <div class="max-w-6xl mx-auto px-4 space-y-1 font-mono text-[11px]">
+  <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-5xl mx-auto px-4 space-y-1 text-[11px]">
       <p>ZZZleep — Offline Desktop Calendar, Audio Alarm &amp; Rest Timer</p>
       <p>© 2026 <a href="https://github.com/InfiniteNull" class="text-sky-400 hover:underline">Rizki Ananda, S.Kom (@InfiniteNull)</a></p>
     </div>
@@ -181,15 +175,26 @@
       const img = document.getElementById('screenshotImg');
       const btn1 = document.getElementById('btnTab1');
       const btn2 = document.getElementById('btnTab2');
+      const btn3 = document.getElementById('btnTab3');
+
+      const activeClass = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white flex items-center gap-1.5 transition shadow-sm';
+      const inactiveClass = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white flex items-center gap-1.5 border border-slate-800 transition';
 
       if (idx === 1) {
         img.src = 'assets/desktop_preview.png';
-        btn1.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white flex items-center gap-2 transition shadow-sm';
-        btn2.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2 border border-slate-700 transition';
-      } else {
+        btn1.className = activeClass;
+        btn2.className = inactiveClass;
+        btn3.className = inactiveClass;
+      } else if (idx === 2) {
         img.src = 'assets/timers_preview.png';
-        btn2.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white flex items-center gap-2 transition shadow-sm';
-        btn1.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2 border border-slate-700 transition';
+        btn2.className = activeClass;
+        btn1.className = inactiveClass;
+        btn3.className = inactiveClass;
+      } else {
+        img.src = 'assets/vault_preview.png';
+        btn3.className = activeClass;
+        btn1.className = inactiveClass;
+        btn2.className = inactiveClass;
       }
     }
 
