@@ -1,34 +1,54 @@
 # ZZZleep — Offline Desktop Calendar, Audio Alarm & Rest Timer
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-0ea5e9?style=flat-square&logo=github)](https://infinitenull.github.io/ZZZleep/)
+<div align="center">
+
 [![Windows .EXE](https://img.shields.io/badge/Windows-Standalone%20.EXE-0284c7?style=flat-square&logo=windows)](https://github.com/InfiniteNull/ZZZleep)
+[![Python 3](https://img.shields.io/badge/Python-3.10+-38bdf8?style=flat-square&logo=python)](https://github.com/InfiniteNull/ZZZleep)
 [![License: MIT](https://img.shields.io/badge/License-MIT-334155.svg?style=flat-square)](LICENSE)
 
-> **ZZZleep** adalah aplikasi kalender offline, alarm audio, timer Pomodoro, dan pengingat istirahat layar untuk laptop dan PC Windows. Seluruh data tersimpan secara lokal dan generator audio bekerja tanpa ketergantungan file suara eksternal.
+<br />
+
+<img src="assets/desktop_preview.png" alt="ZZZleep Desktop Application" width="880" />
+
+</div>
+
+> **ZZZleep** adalah aplikasi desktop native Windows untuk kalender offline, alarm audio sintetis, timer Pomodoro, dan pengingat istirahat layar (aturan 20-20-20). Seluruh data tersimpan secara lokal dan generator audio bekerja langsung melalui driver Windows tanpa file audio eksternal.
+
+---
+
+## Tampilan Antarmuka (UI Preview)
+
+<div align="center">
+
+### 1. Dashboard Alarm & Jadwal Waktu Lokal
+<img src="assets/desktop_preview.png" alt="Dashboard Alarm" width="820" />
+
+<br />
+
+### 2. Timer Pomodoro & Pengingat Istirahat Layar 20-20-20
+<img src="assets/timers_preview.png" alt="Timer Pomodoro & Eye Rest" width="820" />
+
+</div>
 
 ---
 
 ## Fitur Utama
 
-1. **Kalender & Jadwal Offline**
-   - Matriks kalender bulanan dengan penanda jadwal dan agenda kegiatan harian.
-   - Tersimpan di penyimpanan lokal (*LocalStorage* pada web atau file JSON pada desktop).
-
-2. **Alarm Audio (Web Audio API & Python winsound)**
-   - Nada dering disintesis secara langsung menggunakan osilator audio di browser dan modul `winsound` di Python tanpa membutuhkan file audio eksternal (`.mp3` atau `.wav`).
+1. **Alarm Audio Sintetis (Bebas File Eksternal)**
+   - Nada dering alarm dihasilkan langsung melalui modul `winsound.Beep` pada background thread, tanpa risiko file `.mp3` hilang atau rusak.
    - Pilihan nada: Arpeggio C-Mayor, nada digital 880Hz, dan bel harmonis.
 
+2. **Pengingat Istirahat Layar (Aturan 20-20-20)**
+   - Timer otomatis setiap 20 menit untuk mengingatkan pengguna mengalihkan pandangan sejauh 6 meter (20 kaki) selama 20 detik guna mencegah ketegangan mata digital.
+
 3. **Timer Pomodoro (25/5)**
-   - Siklus kerja fokus 25 menit dan istirahat 5 menit dengan notifikasi audio.
+   - Siklus kerja fokus 25 menit diselingi istirahat 5 menit dengan notifikasi suara.
 
-4. **Pengingat Istirahat Layar (Aturan 20-20-20)**
-   - Timer otomatis setiap 20 menit untuk mengistirahatkan mata dengan melihat objek sejauh 6 meter (20 kaki) selama 20 detik guna mencegah ketegangan mata digital.
+4. **Penyimpanan Data Lokal JSON**
+   - Jadwal dan alarm tersimpan otomatis di direktori pengguna (`~/.zzzleep_desktop_data.json`) dan dapat dicadangkan secara manual.
 
-5. **Pelacak Kebiasaan Harian**
-   - Checklist rutinitas harian (target minum air 2L, stretching postur, jam tidur) disertai penghitung *streak*.
-
-6. **Penyimpanan Data Lokal & Backup JSON**
-   - Ekspor dan impor data jadwal dan preferensi dalam format JSON standar.
+5. **Standalone Windows Executable (.exe)**
+   - Dapat dikompilasi menjadi satu file eksekusi mandiri tanpa perlu instalasi Python pada komputer target.
 
 ---
 
@@ -36,45 +56,48 @@
 
 ```text
 ZZZleep/
-├── index.html            # Web client (GitHub Pages)
-├── js/
-│   └── zzzleep.js  # Audio synthesizer, kalender, timer, dan storage engine
+├── assets/
+│   ├── desktop_preview.png  # Screenshot UI alarm & dashboard
+│   └── timers_preview.png   # Screenshot UI pomodoro & 20-20-20
 ├── desktop/
-│   ├── app.py            # Aplikasi native desktop Windows (Tkinter GUI)
-│   └── build_exe.py      # Script build PyInstaller untuk membuat ZZZleep.exe
-├── requirements.txt      # Dependensi build desktop
-└── README.md             # Dokumentasi
+│   ├── app.py               # Aplikasi native desktop Windows (Tkinter GUI)
+│   └── build_exe.py         # Script build PyInstaller untuk membuat ZZZleep.exe
+├── requirements.txt         # Dependensi build desktop
+└── README.md                # Dokumentasi
 ```
 
 ---
 
-## Cara Menjalankan
+## Cara Menjalankan & Build .EXE
 
-### 1. Web Version (Browser)
-Akses langsung melalui GitHub Pages: [https://infinitenull.github.io/ZZZleep/](https://infinitenull.github.io/ZZZleep/)
-
-### 2. Desktop Version (Windows Native)
+### 1. Menjalankan Langsung dengan Python
 ```bash
 # Clone repository
 git clone https://github.com/InfiniteNull/ZZZleep.git
 cd ZZZleep
 
-# Jalankan langsung dengan Python
+# Jalankan aplikasi
 python desktop/app.py
+```
 
-# Kompilasi menjadi file ZZZleep.exe mandiri
+### 2. Kompilasi Menjadi File ZZZleep.exe Mandiri
+```bash
+# Install PyInstaller
 pip install -r requirements.txt
+
+# Jalankan automated builder
 python desktop/build_exe.py
 ```
-File executable mandiri akan tersedia di folder `desktop/dist/ZZZleep.exe`.
+File `ZZZleep.exe` akan langsung tersedia di folder `desktop/dist/ZZZleep.exe` dan siap dipindahkan atau dijalankan di PC Windows manapun.
 
 ---
 
 ## Teknologi
 
-- **Web**: HTML5, Tailwind CSS, Vanilla JavaScript (ES6+), Web Audio API, Lucide Icons.
-- **Desktop**: Python 3, Tkinter GUI, Windows `winsound` driver, PyInstaller.
-- **Storage**: Browser LocalStorage & Local JSON file.
+- **GUI**: Python 3 & Tkinter (Dark theme styling).
+- **Audio Engine**: Windows native `winsound` driver.
+- **Packaging**: PyInstaller (`--noconsole --onefile`).
+- **Data**: Local JSON storage engine.
 
 ---
 
