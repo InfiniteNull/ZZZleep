@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ZZZleep Desktop — Offline Calendar, Audio Alarm & Rest Timer
+ZZZleep Desktop — Desktop Calendar, Audio Alarm & Rest Timer
 Author: Rizki Ananda, S.Kom (@InfiniteNull)
 License: MIT
 """
@@ -46,7 +46,7 @@ DEFAULT_DATA = {
 
 
 def play_audio_tone(tone_type="gentle"):
-    """Synthesizes offline harmonic beeps using native winsound."""
+    """Synthesizes harmonic beeps using native winsound."""
     if not HAS_WINSOUND:
         return
 
@@ -80,7 +80,7 @@ def play_audio_tone(tone_type="gentle"):
 class ZzzleepDesktopApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"{APP_NAME} v{APP_VERSION} (Offline)")
+        self.root.title(f"{APP_NAME} v{APP_VERSION}")
         self.root.geometry("920x660")
         self.root.minsize(840, 580)
         self.root.configure(bg="#0f172a")
@@ -139,7 +139,7 @@ class ZzzleepDesktopApp:
         brand = tk.Label(header, text="⏰ ZZZleep Desktop", font=("Segoe UI", 13, "bold"), fg="#38bdf8", bg="#1e293b")
         brand.pack(side="left", padx=16, pady=12)
 
-        badge = tk.Label(header, text="OFFLINE", font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#0f172a", padx=8, pady=2)
+        badge = tk.Label(header, text="WINDOWS", font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#0f172a", padx=8, pady=2)
         badge.pack(side="left", padx=2)
 
         self.top_clock = tk.Label(header, text="--:--:--", font=("Consolas", 12, "bold"), fg="#f8fafc", bg="#1e293b")
@@ -173,7 +173,7 @@ class ZzzleepDesktopApp:
         left.pack(side="left", fill="y", padx=6, pady=6)
         left.pack_propagate(False)
 
-        tk.Label(left, text="WAKTU LOKAL (OFFLINE)", font=("Segoe UI", 8, "bold"), fg="#64748b", bg="#1e293b").pack(anchor="w", padx=16, pady=(16, 2))
+        tk.Label(left, text="WAKTU LOKAL", font=("Segoe UI", 8, "bold"), fg="#64748b", bg="#1e293b").pack(anchor="w", padx=16, pady=(16, 2))
         self.clock_lbl = tk.Label(left, text="00:00:00", font=("Consolas", 26, "bold"), fg="#38bdf8", bg="#1e293b")
         self.clock_lbl.pack(anchor="w", padx=16)
         self.date_lbl = tk.Label(left, text="Loading...", font=("Segoe UI", 10), fg="#94a3b8", bg="#1e293b")

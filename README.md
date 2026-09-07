@@ -1,4 +1,4 @@
-# ZZZleep — Offline Desktop Calendar, Audio Alarm & Rest Timer
+# ZZZleep — Desktop Calendar, Audio Alarm & Rest Timer
 
 <div align="center">
 
@@ -12,7 +12,7 @@
 
 </div>
 
-> **ZZZleep** adalah aplikasi desktop native Windows untuk kalender offline, alarm audio sintetis, timer Pomodoro, dan pengingat istirahat layar (aturan 20-20-20). Seluruh data tersimpan secara lokal dan generator audio bekerja langsung melalui driver Windows tanpa file audio eksternal.
+> **ZZZleep** adalah aplikasi desktop native Windows untuk kalender, alarm audio sintetis, timer Pomodoro, dan pengingat istirahat layar (aturan 20-20-20). Seluruh data tersimpan secara lokal dan generator audio bekerja langsung melalui driver Windows tanpa file audio eksternal.
 
 ---
 
@@ -25,8 +25,13 @@
 
 <br />
 
-### 2. Timer Pomodoro & Pengingat Istirahat Layar 20-20-20
+### 2. Timer Pomodoro & Pengingat Istirahat Layar (20-20-20)
 <img src="assets/timers_preview.png" alt="Timer Pomodoro & Eye Rest" width="820" />
+
+<br />
+
+### 3. Penyimpanan Data JSON & Backup
+<img src="assets/vault_preview.png" alt="Data JSON & Backup" width="820" />
 
 </div>
 
@@ -57,8 +62,9 @@
 ```text
 ZZZleep/
 ├── assets/
-│   ├── desktop_preview.png  # Screenshot UI alarm & dashboard
-│   └── timers_preview.png   # Screenshot UI pomodoro & 20-20-20
+│   ├── desktop_preview.png  # Tangkapan layar UI alarm & dashboard
+│   ├── timers_preview.png   # Tangkapan layar UI pomodoro & 20-20-20
+│   └── vault_preview.png    # Tangkapan layar UI penyimpanan data JSON
 ├── desktop/
 │   ├── app.py               # Aplikasi native desktop Windows (Tkinter GUI)
 │   └── build_exe.py         # Script build PyInstaller untuk membuat ZZZleep.exe
