@@ -1,2 +1,2 @@
-# ZZZleep Suite Desktop Dependencies
+# ZZZleep Desktop Dependencies
 pyinstaller>=6.0.0

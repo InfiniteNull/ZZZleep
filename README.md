@@ -38,7 +38,7 @@
 ZZZleep/
 ├── index.html            # Web client (GitHub Pages)
 ├── js/
-│   └── zzzleep-suite.js  # Audio synthesizer, kalender, timer, dan storage engine
+│   └── zzzleep.js  # Audio synthesizer, kalender, timer, dan storage engine
 ├── desktop/
 │   ├── app.py            # Aplikasi native desktop Windows (Tkinter GUI)
 │   └── build_exe.py      # Script build PyInstaller untuk membuat ZZZleep.exe

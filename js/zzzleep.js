@@ -1,5 +1,5 @@
 /**
- * zzzleep-suite.js — ZZZleep: Offline Desktop Calendar, Audio Alarm & Rest Timer
+ * zzzleep.js — ZZZleep: Offline Desktop Calendar, Audio Alarm & Rest Timer
  * Author: Rizki Ananda, S.Kom (@InfiniteNull)
  * License: MIT
  */
@@ -373,7 +373,7 @@
   // =========================================================================
   // MASTER RENDER CONTAINER
   // =========================================================================
-  window.renderZzzleepSuite = function (container) {
+  window.renderZzzleep = function (container) {
     const isEn = window.currentLang === 'en';
 
     const totalAlarms = state.alarms.length;
@@ -396,7 +396,7 @@
             </h2>
             <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               ${isEn
-                ? "Autonomous desktop time-management suite designed for laptops & PCs. Features offline monthly agenda matrix, realtime synthesizer audio alarms, Pomodoro focus cycles, 20-20-20 eye health protector, daily habit streak logs, and standalone Windows .EXE packaging."
+                ? "Autonomous desktop time-management tool designed for laptops & PCs. Features offline monthly agenda matrix, realtime synthesizer audio alarms, Pomodoro focus cycles, 20-20-20 eye health protector, daily habit streak logs, and standalone Windows .EXE packaging."
                 : "Aplikasi pengatur waktu & produktivitas desktop mandiri untuk laptop dan PC. Dilengkapi kalender agenda offline, alarm audio synthesizer realtime, timer pomodoro, pelindung kesehatan mata 20-20-20, pencatat kebiasaan harian, serta dukungan build aplikasi Windows .EXE mandiri."}
             </p>
           </div>
@@ -519,9 +519,9 @@
   };
 
   function reRenderActiveView() {
-    const root = document.getElementById('zzzleepSuiteRoot');
-    if (root && typeof window.renderZzzleepSuite === 'function') {
-      window.renderZzzleepSuite(root);
+    const root = document.getElementById('zzzleepRoot');
+    if (root && typeof window.renderZzzleep === 'function') {
+      window.renderZzzleep(root);
     }
   }
 
@@ -1436,8 +1436,8 @@
 
           <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
             ${isEn
-              ? "ZZZleep Suite includes a production-grade Python desktop client located in the <code>desktop/</code> directory. It runs natively in the Windows System Tray, monitors alarms in the background even when browser is closed, and triggers native Windows notifications."
-              : "ZZZleep Suite menyertakan klien desktop Python native di folder <code>desktop/</code>. Aplikasi ini berjalan di latar belakang (System Tray Windows), mengecek alarm saat browser ditutup, dan memunculkan banner notifikasi Windows asli."}
+              ? "ZZZleep includes a production-grade Python desktop client located in the <code>desktop/</code> directory. It runs natively in the Windows System Tray, monitors alarms in the background even when browser is closed, and triggers native Windows notifications."
+              : "ZZZleep menyertakan klien desktop Python native di folder <code>desktop/</code>. Aplikasi ini berjalan di latar belakang (System Tray Windows), mengecek alarm saat browser ditutup, dan memunculkan banner notifikasi Windows asli."}
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs pt-2">

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ZZZleep Suite — Automated PyInstaller Executable Builder
+ZZZleep — Automated PyInstaller Executable Builder
 Author: Rizki Ananda, S.Kom (@InfiniteNull)
 
 Compiles desktop/app.py into a standalone single-file Windows executable (ZZZleep.exe).
@@ -16,7 +16,7 @@ def build():
     dist_dir = os.path.join(script_dir, "dist")
 
     print("============================================================")
-    print("  ZZZleep Suite — Native Windows Executable (.EXE) Builder  ")
+    print("  ZZZleep — Native Windows Executable (.EXE) Builder  ")
     print("============================================================")
     print(f"Source script: {app_path}")
 

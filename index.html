@@ -160,8 +160,8 @@
 
   <!-- MAIN CONTENT CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-    <div id="zzzleepSuiteRoot">
-      <!-- Populated dynamically by js/zzzleep-suite.js -->
+    <div id="zzzleepRoot">
+      <!-- Populated dynamically by js/zzzleep.js -->
     </div>
   </main>
 
@@ -174,7 +174,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="js/zzzleep-suite.js"></script>
+  <script src="js/zzzleep.js"></script>
   <script>
     // Theme Manager
     function initTheme() {
@@ -229,9 +229,9 @@
       localStorage.setItem('app_lang', window.currentLang);
       updateLanguageLabels();
 
-      const root = document.getElementById('zzzleepSuiteRoot');
-      if (root && typeof window.renderZzzleepSuite === 'function') {
-        window.renderZzzleepSuite(root);
+      const root = document.getElementById('zzzleepRoot');
+      if (root && typeof window.renderZzzleep === 'function') {
+        window.renderZzzleep(root);
       }
     }
 
@@ -245,9 +245,9 @@
       const langToggleBtn = document.getElementById('langToggleBtn');
       if (langToggleBtn) langToggleBtn.addEventListener('click', toggleLanguage);
 
-      const root = document.getElementById('zzzleepSuiteRoot');
-      if (root && typeof window.renderZzzleepSuite === 'function') {
-        window.renderZzzleepSuite(root);
+      const root = document.getElementById('zzzleepRoot');
+      if (root && typeof window.renderZzzleep === 'function') {
+        window.renderZzzleep(root);
       }
       if (window.lucide) {
         lucide.createIcons();
