@@ -1,13 +1,13 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "release_date": "2026-09-07",
-  "title": "Pembaruan Sistem ZZZleep",
+  "title": "Pembaruan ZZZleep v1.1.0",
   "changelog": [
-    "Audio synthesizer mandiri via winsound (tanpa dependensi file audio eksternal)",
-    "Pengingat istirahat mata 20-20-20 & timer Pomodoro fokus 25/5",
-    "Sistem pendeteksi pembaruan otomatis terintegrasi repository GitHub",
-    "Penyimpanan lokal preferensi & jadwal berbasis JSON",
-    "Tersedia binary file mandiri siap jalan (bin/ZZZleep.exe)"
+    "5 Pilihan nada suara alarm audio sintetis (Gentle, Retro, Bell, Chime, Zen)",
+    "Kontrol sakelar ON/OFF pengingat istirahat mata 20-20-20 dengan kustomisasi interval (15m, 20m, 30m, 45m)",
+    "Dukungan dwibahasa penuh (Bahasa Indonesia & English) dengan tombol switch instan",
+    "Pilihan tema antarmuka Gelap (Dark Mode) & Terang (Light Mode)",
+    "Sistem sinkronisasi versi dan unduhan binary mandiri bin/ZZZleep.exe langsung"
   ],
   "download_url": "https://github.com/InfiniteNull/ZZZleep/raw/main/bin/ZZZleep.exe",
   "github_repo_url": "https://github.com/InfiniteNull/ZZZleep"
