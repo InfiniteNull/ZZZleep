@@ -2,6 +2,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.spec
+desktop/*.spec
+desktop/build/
+desktop/dist/
 build/
 dist/
 .DS_Store

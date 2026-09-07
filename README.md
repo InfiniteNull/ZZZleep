@@ -68,6 +68,8 @@ ZZZleep/
 │   ├── desktop_preview.png  # Tangkapan layar UI alarm & dashboard
 │   ├── timers_preview.png   # Tangkapan layar UI pomodoro & 20-20-20
 │   └── vault_preview.png    # Tangkapan layar UI data JSON & update
+├── bin/
+│   └── ZZZleep.exe          # Binary mandiri siap jalan langsung
 ├── desktop/
 │   ├── app.py               # Aplikasi desktop GUI & Auto-Updater engine
 │   └── build_exe.py         # Script build PyInstaller
@@ -80,7 +82,10 @@ ZZZleep/
 
 ## Cara Menjalankan & Kompilasi
 
-### 1. Menjalankan Langsung dengan Python
+### 1. Mengunduh Binary Siap Jalan
+Unduh langsung file binary [**`bin/ZZZleep.exe`**](https://github.com/InfiniteNull/ZZZleep/raw/main/bin/ZZZleep.exe) dan jalankan langsung pada komputer Windows tanpa memerlukan instalasi Python.
+
+### 2. Menjalankan Langsung dengan Python
 ```bash
 # Clone repository
 git clone https://github.com/InfiniteNull/ZZZleep.git
@@ -90,7 +95,7 @@ cd ZZZleep
 python desktop/app.py
 ```
 
-### 2. Kompilasi Mandiri
+### 3. Kompilasi Mandiri via PyInstaller
 ```bash
 # Install dependensi
 pip install -r requirements.txt
@@ -98,7 +103,7 @@ pip install -r requirements.txt
 # Jalankan automated builder
 python desktop/build_exe.py
 ```
-Berkas eksekusi mandiri akan langsung tersedia di folder `desktop/dist/` dan siap dijalankan.
+Berkas eksekusi mandiri akan dibuat di folder `desktop/dist/ZZZleep.exe`.
 
 ---
 
