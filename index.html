@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZZZleep Suite — Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian</title>
+  <meta name="description" content="Aplikasi kalender interaktif desktop offline, alarm audio cerdas, pomodoro timer, dan pengingat istirahat layar/kesehatan untuk laptop dan PC Windows." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><rect width='32' height='32' rx='8' fill='%230f172a'/><path d='M10 9h12l-10 14h10' stroke='%2338bdf8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+
+  <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    /* Tab Styling */
+    .zzz-tab-link {
+      color: #64748b;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease-in-out;
+    }
+    .zzz-tab-link:hover {
+      color: #0284c7;
+      background-color: rgba(2, 132, 199, 0.04);
+    }
+    .zzz-tab-link.active {
+      color: #0284c7;
+      border-bottom-color: #0284c7;
+      background-color: rgba(2, 132, 199, 0.08);
+    }
+    .dark .zzz-tab-link {
+      color: #94a3b8;
+    }
+    .dark .zzz-tab-link:hover {
+      color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+    .dark .zzz-tab-link.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.1);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(148, 163, 184, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.35);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen antialiased flex flex-col justify-between selection:bg-sky-500 selection:text-white transition-colors duration-200">
+
+  <!-- TOP GLOBAL HEADER -->
+  <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & System Title -->
+      <div class="flex items-center gap-3">
+        <a href="https://infinitenull.github.io/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-500/20 shadow-sm group-hover:bg-sky-600 group-hover:text-white transition-all">
+            <i data-lucide="alarm-clock" class="w-5 h-5"></i>
+          </div>
+        </a>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight" id="headerSystemTitle">
+              ZZZleep Suite
+            </h1>
+            <span id="headerSystemBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+              100% OFFLINE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono" id="headerSystemSub">
+            Smart Calendar • Audio Alarm Synth • Pomodoro • Windows .EXE
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Nav Buttons -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        
+        <!-- Language Switcher Toggle -->
+        <button id="langToggleBtn" type="button" aria-label="Ganti Bahasa" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition flex items-center gap-1">
+          <i data-lucide="languages" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span id="langLabel">ID</span>
+        </button>
+
+        <!-- Dark / Light Theme Toggle -->
+        <button id="themeToggleBtn" type="button" aria-label="Toggle Dark Mode" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition">
+          <i data-lucide="sun" id="themeIconSun" class="w-4 h-4 hidden"></i>
+          <i data-lucide="moon" id="themeIconMoon" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Hub Portofolio Link -->
+        <a href="https://infinitenull.github.io/" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition">
+          <i data-lucide="home" class="w-3.5 h-3.5 text-sky-600 dark:text-sky-400"></i>
+          <span id="navHubLabel">Hub Portofolio ↗</span>
+        </a>
+
+        <!-- GitHub Profile Badge -->
+        <a href="https://github.com/InfiniteNull" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 p-1 pl-1.5 pr-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition" title="Rizki Ananda, S.Kom (@InfiniteNull)">
+          <img src="https://github.com/InfiniteNull.png" alt="InfiniteNull" class="w-5 h-5 rounded-md object-cover ring-1 ring-slate-300 dark:ring-slate-600" />
+          <span class="text-[11px] font-mono font-semibold hidden md:inline">@InfiniteNull</span>
+        </a>
+
+        <!-- GitHub Source Link -->
+        <a href="https://github.com/InfiniteNull/ZZZleep" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 flex items-center gap-1.5 transition shadow-sm">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i>
+          <span>GitHub Source ↗</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div id="zzzleepSuiteRoot">
+      <!-- Populated dynamically by js/zzzleep-suite.js -->
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 space-y-1 font-mono text-[11px]">
+      <p id="footerSub1">ZZZleep Suite — Smart Offline Desktop Calendar, Precision Alarm & Routine Guardian</p>
+      <p id="footerSub2">© 2026 <a href="https://github.com/InfiniteNull" class="text-sky-600 dark:text-sky-400 hover:underline">Rizki Ananda, S.Kom (@InfiniteNull)</a> • Handcrafted with Clean Code & 100% Privacy.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/zzzleep-suite.js"></script>
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const themeIconSun = document.getElementById('themeIconSun');
+      const themeIconMoon = document.getElementById('themeIconMoon');
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        if (themeIconSun) themeIconSun.classList.remove('hidden');
+        if (themeIconMoon) themeIconMoon.classList.add('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        if (themeIconSun) themeIconSun.classList.add('hidden');
+        if (themeIconMoon) themeIconMoon.classList.remove('hidden');
+      }
+    }
+
+    function toggleTheme() {
+      const themeIconSun = document.getElementById('themeIconSun');
+      const themeIconMoon = document.getElementById('themeIconMoon');
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+      if (isDark) {
+        if (themeIconSun) themeIconSun.classList.remove('hidden');
+        if (themeIconMoon) themeIconMoon.classList.add('hidden');
+      } else {
+        if (themeIconSun) themeIconSun.classList.add('hidden');
+        if (themeIconMoon) themeIconMoon.classList.remove('hidden');
+      }
+    }
+
+    // Language Manager
+    window.currentLang = localStorage.getItem('app_lang') || 'id';
+
+    function updateLanguageLabels() {
+      const isEn = window.currentLang === 'en';
+      const langLabel = document.getElementById('langLabel');
+      if (langLabel) langLabel.textContent = isEn ? 'EN' : 'ID';
+
+      const navHubLabel = document.getElementById('navHubLabel');
+      if (navHubLabel) navHubLabel.textContent = isEn ? 'Portfolio Hub ↗' : 'Hub Portofolio ↗';
+
+      const headerSystemBadge = document.getElementById('headerSystemBadge');
+      if (headerSystemBadge) headerSystemBadge.textContent = isEn ? '100% OFFLINE' : '100% OFFLINE';
+    }
+
+    function toggleLanguage() {
+      window.currentLang = window.currentLang === 'id' ? 'en' : 'id';
+      localStorage.setItem('app_lang', window.currentLang);
+      updateLanguageLabels();
+
+      const root = document.getElementById('zzzleepSuiteRoot');
+      if (root && typeof window.renderZzzleepSuite === 'function') {
+        window.renderZzzleepSuite(root);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      updateLanguageLabels();
+
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+      const langToggleBtn = document.getElementById('langToggleBtn');
+      if (langToggleBtn) langToggleBtn.addEventListener('click', toggleLanguage);
+
+      const root = document.getElementById('zzzleepSuiteRoot');
+      if (root && typeof window.renderZzzleepSuite === 'function') {
+        window.renderZzzleepSuite(root);
+      }
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
